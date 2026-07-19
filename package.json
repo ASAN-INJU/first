@@ -1,0 +1,14 @@
+{
+  "name": "v11-clean-server",
+  "version": "1.0.0",
+  "description": "V11.2 Clean Stock API Server",
+  "main": "api-server.js",
+  "scripts": {
+    "start": "node api-server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}
