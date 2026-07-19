@@ -15,8 +15,11 @@ let accessToken = null;
 // =======================================
 
 async function getToken(){
-console.log("BASE_URL =", process.env.KIS_BASE_URL);
-console.log("APP_KEY =", process.env.APP_KEY ? "OK" : "NONE");
+
+    console.log("KIS_BASE_URL =", process.env.KIS_BASE_URL);
+    console.log("APP_KEY exists =", !!process.env.APP_KEY);
+    console.log("APP_SECRET exists =", !!process.env.APP_SECRET);
+
     const url =
     `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
 
