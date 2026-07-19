@@ -1,0 +1,361 @@
+/* =====================================
+   V12 Ultimate
+   AI 주식 단타 분석 시스템
+   style.css
+===================================== */
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin:0;
+
+    padding:0;
+
+    font-family:
+    "Noto Sans KR",
+    Arial,
+    sans-serif;
+
+    background:#f3f4f6;
+
+    color:#111827;
+
+}
+
+
+
+.container {
+
+    max-width:480px;
+
+    margin:auto;
+
+    padding:20px;
+
+}
+
+
+
+/* 상단 제목 */
+
+header {
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+}
+
+
+header h1 {
+
+    font-size:28px;
+
+    margin:0;
+
+}
+
+
+header p {
+
+    margin-top:8px;
+
+    color:#6b7280;
+
+}
+
+
+
+/* 검색 영역 */
+
+.searchBox {
+
+    background:white;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,0.08);
+
+}
+
+
+
+.searchBox input {
+
+    width:100%;
+
+    padding:14px;
+
+    font-size:16px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+}
+
+
+
+.searchBox button {
+
+    width:100%;
+
+    margin-top:10px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+
+.searchBox button:hover {
+
+    background:#1d4ed8;
+
+}
+
+
+
+/* 자동완성 */
+
+#suggestions {
+
+    background:white;
+
+    border-radius:8px;
+
+    overflow:hidden;
+
+}
+
+
+
+.suggestion-item {
+
+    padding:10px;
+
+    border-bottom:1px solid #eee;
+
+    cursor:pointer;
+
+}
+
+
+.suggestion-item:hover {
+
+    background:#f1f5f9;
+
+}
+
+
+
+/* 가격 영역 */
+
+.priceArea {
+
+    margin-top:15px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    text-align:center;
+
+}
+
+
+
+#stockName {
+
+    margin:0;
+
+}
+
+
+
+.price {
+
+    font-size:34px;
+
+    font-weight:bold;
+
+    margin:15px;
+
+}
+
+
+
+.change {
+
+    font-size:18px;
+
+}
+
+
+
+/* 점수 */
+
+.scoreBox {
+
+    margin-top:15px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    text-align:center;
+
+}
+
+
+
+#score {
+
+    font-size:40px;
+
+    font-weight:bold;
+
+    color:#2563eb;
+
+}
+
+
+
+#recommend {
+
+    margin-top:10px;
+
+    font-size:18px;
+
+}
+
+
+
+/* 이동평균 */
+
+.maBox {
+
+    margin-top:15px;
+
+    background:white;
+
+    padding:15px;
+
+    border-radius:15px;
+
+}
+
+
+
+table {
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+th,td {
+
+    padding:12px;
+
+    border-bottom:1px solid #eee;
+
+    text-align:center;
+
+}
+
+
+
+/* 차트 */
+
+.chartArea {
+
+    margin-top:15px;
+
+    background:white;
+
+    padding:15px;
+
+    border-radius:15px;
+
+}
+
+
+
+/* 분석 결과 */
+
+.messageBox {
+
+    margin-top:15px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:15px;
+
+}
+
+
+
+#analysis {
+
+    line-height:1.6;
+
+    color:#374151;
+
+}
+
+
+
+/* 모바일 최적화 */
+
+@media(max-width:480px){
+
+
+    .container {
+
+        padding:12px;
+
+    }
+
+
+    header h1 {
+
+        font-size:24px;
+
+    }
+
+
+    .price {
+
+        font-size:30px;
+
+    }
+
+}
