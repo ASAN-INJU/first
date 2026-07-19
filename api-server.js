@@ -1,3 +1,4 @@
+const { getCurrentPrice } = require("./kis");
 require("dotenv").config();
 
 const express = require("express");
