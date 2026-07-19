@@ -1,3 +1,4 @@
+console.log("NEW API SERVER VERSION 002");
 require("dotenv").config();
 
 const express = require("express");
