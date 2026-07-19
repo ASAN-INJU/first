@@ -1,9 +1,10 @@
-const { getCurrentPrice } = require("./kis");
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+
 const { getCurrentPrice } = require("./kis");
+
 const app = express();
 
 app.use(cors());
@@ -16,7 +17,6 @@ app.get("/", (req,res)=>{
 });
 
 
-// 주식 API 테스트
 // ================================
 // KIS 현재가 조회 API
 // ================================
@@ -24,11 +24,9 @@ app.get("/api/stock/:code", async (req,res)=>{
 
     const code = req.params.code;
 
-
     try {
 
         const data = await getCurrentPrice(code);
-
 
         res.json({
 
@@ -43,6 +41,7 @@ app.get("/api/stock/:code", async (req,res)=>{
 
     } catch(error) {
 
+        console.log(error.message);
 
         res.status(500).json({
 
@@ -52,18 +51,17 @@ app.get("/api/stock/:code", async (req,res)=>{
 
         });
 
-
     }
 
 });
 
 
+// 서버 실행
 const PORT = process.env.PORT || 3000;
-
 
 app.listen(PORT,()=>{
 
     console.log("=== V11.2 CLEAN SERVER START ===");
-    console.log("PORT:",PORT);
+    console.log("PORT:", PORT);
 
 });
