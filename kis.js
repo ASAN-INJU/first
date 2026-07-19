@@ -120,7 +120,6 @@ module.exports = {
 // =======================================
 
 require("dotenv").config();
-const axios = require("axios");
 
 let accessToken = null;
 
