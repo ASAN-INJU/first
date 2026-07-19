@@ -1,0 +1,29 @@
+{
+    "name": "V12 Ultimate AI 주식 단타 분석",
+    "short_name": "V12 Ultimate",
+
+    "start_url": "./index.html",
+
+    "display": "standalone",
+
+    "background_color": "#f3f4f6",
+
+    "theme_color": "#2563eb",
+
+    "orientation": "portrait",
+
+    "description": "AI 기반 주식 단타 분석 시스템",
+
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
