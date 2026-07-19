@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>V12 Ultimate AI 주식 단타 분석</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<meta name="theme-color" content="#111827">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+
+        <h1>📈 V12 Ultimate</h1>
+
+        <p>AI 주식 단타 분석 시스템</p>
+
+    </header>
+
+
+    <section class="searchBox">
+
+        <input
+            id="stockCode"
+            type="text"
+            placeholder="종목코드 또는 종목명 입력">
+
+        <div id="suggestions"></div>
+
+        <button id="searchBtn">
+            종목 조회
+        </button>
+
+    </section>
+
+
+    <section class="priceArea">
+
+        <h2 id="stockName">종목명</h2>
+
+        <div class="price">
+
+            <span id="price">0원</span>
+
+        </div>
+
+        <div class="change">
+
+            등락률 :
+            <span id="change">0%</span>
+
+        </div>
+
+        <div>
+
+            거래량 :
+            <span id="volume">0</span>
+
+        </div>
+
+    </section>
+
+
+    <section class="scoreBox">
+
+        <h2>AI 점수</h2>
+
+        <div id="score">
+
+            0점
+
+        </div>
+
+        <div id="recommend">
+
+            분석 대기
+
+        </div>
+
+    </section>
+
+
+    <section class="maBox">
+
+        <table>
+
+            <tr>
+
+                <th>5일선</th>
+
+                <td id="ma5">-</td>
+
+            </tr>
+
+            <tr>
+
+                <th>20일선</th>
+
+                <td id="ma20">-</td>
+
+            </tr>
+
+            <tr>
+
+                <th>60일선</th>
+
+                <td id="ma60">-</td>
+
+            </tr>
+
+        </table>
+
+    </section>
+
+
+    <section class="chartArea">
+
+        <canvas id="priceChart"></canvas>
+
+    </section>
+
+
+    <section class="messageBox">
+
+        <h3>AI 분석</h3>
+
+        <div id="analysis">
+
+            종목을 조회하세요.
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
