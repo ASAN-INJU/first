@@ -148,5 +148,45 @@
 
 <script src="script.js"></script>
 
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener(
+        "load",
+        function(){
+
+            navigator.serviceWorker.register(
+                "sw.js"
+            )
+            .then(
+                function(){
+
+                    console.log(
+                        "V12 Ultimate PWA Service Worker 등록 완료"
+                    );
+
+                }
+            )
+            .catch(
+                function(error){
+
+                    console.log(
+                        "Service Worker 등록 실패",
+                        error
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
+</script>
+
+
 </body>
 </html>
