@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-
+const { getCurrentPrice } = require("./kis");
 const app = express();
 
 app.use(cors());
@@ -16,15 +16,43 @@ app.get("/", (req,res)=>{
 
 
 // 주식 API 테스트
-app.get("/api/stock/:code",(req,res)=>{
+// ================================
+// KIS 현재가 조회 API
+// ================================
+app.get("/api/stock/:code", async (req,res)=>{
 
-    res.json({
+    const code = req.params.code;
 
-        success:true,
-        code:req.params.code,
-        message:"API 연결 성공"
 
-    });
+    try {
+
+        const data = await getCurrentPrice(code);
+
+
+        res.json({
+
+            success:true,
+
+            code:code,
+
+            kis:data
+
+        });
+
+
+    } catch(error) {
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:"KIS API 조회 실패"
+
+        });
+
+
+    }
 
 });
 
