@@ -16,15 +16,19 @@ let accessToken = null;
 
 async function getToken(){
 
-    console.log("KIS_BASE_URL =", process.env.KIS_BASE_URL);
-    console.log("APP_KEY exists =", !!process.env.APP_KEY);
-    console.log("APP_SECRET exists =", !!process.env.APP_SECRET);
+    console.log("===== ENV CHECK =====");
+    console.log("KIS_BASE_URL:", process.env.KIS_BASE_URL);
+    console.log("APP_KEY:", process.env.APP_KEY ? "OK" : "NONE");
+    console.log("APP_SECRET:", process.env.APP_SECRET ? "OK" : "NONE");
 
-    const url =
-    `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
+    const url = `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
 
+    console.log("TOKEN URL:", url);
 
-    const body = {
+    ...
+}
+    
+const body = {
 
         grant_type: "client_credentials",
 
