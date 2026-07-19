@@ -1,10 +1,13 @@
-console.log("NEW API SERVER VERSION 002");
+// =======================================
+// V12 Ultimate Stock API Server
+// =======================================
+
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
 
-const { getCurrentPrice } = require("./kis");
+const { getStockInfo } = require("./kis");
 
 const app = express();
 
@@ -14,42 +17,30 @@ app.use(express.json());
 
 // 서버 확인
 app.get("/", (req,res)=>{
-    res.send("V11.2 CLEAN SERVER OK");
+    res.send("V12 Ultimate API Server Running");
 });
 
 
-// ================================
-// KIS 현재가 조회 API
-// ================================
-app.get("/api/stock/:code", async (req,res)=>{
+// 주식 조회 API
+app.get("/api/stock/:code", async(req,res)=>{
 
-    const code = req.params.code;
+    try{
 
-    try {
-
-        const data = await getCurrentPrice(code);
+        const result = await getStockInfo(
+            req.params.code
+        );
 
         res.json({
-
             success:true,
-
-            code:code,
-
-            kis:data
-
+            data:result
         });
 
 
-    } catch(error) {
-
-        console.log(error.message);
+    }catch(error){
 
         res.status(500).json({
-
             success:false,
-
-            message:"KIS API 조회 실패"
-
+            message:error.message
         });
 
     }
@@ -57,12 +48,13 @@ app.get("/api/stock/:code", async (req,res)=>{
 });
 
 
-// 서버 실행
 const PORT = process.env.PORT || 3000;
+
 
 app.listen(PORT,()=>{
 
-    console.log("=== V11.2 CLEAN SERVER START ===");
-    console.log("PORT:", PORT);
+    console.log(
+        `Server running ${PORT}`
+    );
 
 });
