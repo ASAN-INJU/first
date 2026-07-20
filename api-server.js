@@ -100,44 +100,6 @@ async(req,res)=>{
         const stock =
         await getCurrentPrice(code);
 
-
-        const ma =
-        await getMovingAverage(code);
-const analysis =
-analyzeStock({
-
-    price:stock.price,
-
-    change:stock.change,
-
-    volume:stock.volume,
-
-    ma5:ma.ma5,
-
-    ma20:ma.ma20,
-
-   ma60:ma.ma60,
-
-analysis:analysis
-
-});
-
-const analysis =
-analyzeStock({
-
-    price:stock.price,
-
-    change:stock.change,
-
-    volume:stock.volume,
-
-    ma5:ma.ma5,
-
-    ma20:ma.ma20,
-
-    ma60:ma.ma60
-
-});
         res.json({
 
             success:true,
