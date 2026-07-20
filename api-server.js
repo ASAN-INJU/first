@@ -106,7 +106,6 @@ async(req,res)=>{
         await getMovingAverage(code);
 
 
-
         const analysis =
         analyzeStock({
 
@@ -169,7 +168,6 @@ async(req,res)=>{
     }
 
 });
-
 
 res.json({
 
