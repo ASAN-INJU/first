@@ -30,33 +30,47 @@ async function getAccessToken(){
     `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
 
 
-    const response =
-    await axios.post(
-        url,
-        {
-            grant_type:"client_credentials",
-            appkey:process.env.APP_KEY,
-            appsecret:process.env.APP_SECRET
-        },
-        {
-            headers:{
-                "content-type":"application/json"
+    try{
+
+        const response =
+        await axios.post(
+            url,
+            {
+                grant_type:"client_credentials",
+                appkey:process.env.APP_KEY,
+                appsecret:process.env.APP_SECRET
+            },
+            {
+                headers:{
+                    "content-type":"application/json"
+                }
             }
-        }
-    );
+        );
 
 
-    accessToken =
-    response.data.access_token;
+        accessToken =
+        response.data.access_token;
 
 
-    tokenTime = Date.now();
+        tokenTime =
+        Date.now();
 
 
-    console.log("KIS TOKEN 발급 성공");
+        console.log("KIS TOKEN 발급 성공");
 
 
-    return accessToken;
+        return accessToken;
+
+
+    }catch(error){
+
+        console.log(
+            "TOKEN ERROR",
+            error.response?.data || error.message
+        );
+
+        throw error;
+    }
 
 }
 
@@ -68,18 +82,25 @@ async function getAccessToken(){
 
 async function getCurrentPrice(code){
 
+
     const token =
     await getAccessToken();
+
 
 
     const url =
     `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`;
 
 
-    const response =
-    await axios.get(
-        url,
-        {
+
+    try{
+
+
+        const response =
+        await axios.get(
+            url,
+            {
+
             headers:{
 
                 authorization:
@@ -96,6 +117,7 @@ async function getCurrentPrice(code){
 
             },
 
+
             params:{
 
                 FID_COND_MRKT_DIV_CODE:"J",
@@ -103,25 +125,55 @@ async function getCurrentPrice(code){
                 FID_INPUT_ISCD:code
 
             }
-        }
-    );
+
+        });
 
 
-    const data =
-    response.data.output;
+
+        const data =
+        response.data.output;
 
 
-    return {
 
-        code:code,
+        return {
 
-        price:Number(data.stck_prpr),
+            code,
 
-        change:Number(data.prdy_ctrt),
+            price:
+            Number(data.stck_prpr),
 
-        volume:Number(data.acml_vol)
+            change:
+            Number(data.prdy_ctrt),
 
-    };
+            volume:
+            Number(data.acml_vol)
+
+        };
+
+
+
+    }catch(error){
+
+
+        console.log(
+            "PRICE ERROR",
+            error.response?.data || error.message
+        );
+
+
+        return {
+
+            code,
+
+            price:0,
+
+            change:0,
+
+            volume:0
+
+        };
+
+    }
 
 }
 
@@ -144,51 +196,115 @@ async function getDailyPrice(code){
 
 
 
-    const response =
-    await axios.get(
-        url,
-        {
-
-        headers:{
-
-            authorization:
-            `Bearer ${token}`,
-
-            appkey:
-            process.env.APP_KEY,
-
-            appsecret:
-            process.env.APP_SECRET,
-
-            tr_id:
-            "FHKST03010100"
-
-        },
+    try{
 
 
-        params:{
+        const response =
+        await axios.get(
+            url,
+            {
 
 
-            FID_COND_MRKT_DIV_CODE:"J",
-
-            FID_INPUT_ISCD:code,
-
-            FID_PERIOD_DIV_CODE:"D",
-
-            FID_ORG_ADJ_PRC:"1"
-
-        }
-
-    });
+            headers:{
 
 
+                authorization:
+                `Bearer ${token}`,
 
-   console.log(
-    "DAILY DATA",
-    response.data
-);
+                appkey:
+                process.env.APP_KEY,
 
-return response.data.output2 || [];
+                appsecret:
+                process.env.APP_SECRET,
+
+
+                tr_id:
+                "FHKST03010100"
+
+            },
+
+
+            params:{
+
+
+                FID_COND_MRKT_DIV_CODE:"J",
+
+                FID_INPUT_ISCD:code,
+
+
+                FID_INPUT_DATE_1:"20260101",
+
+                FID_INPUT_DATE_2:
+                new Date()
+                .toISOString()
+                .slice(0,10)
+                .replace(/-/g,""),
+
+
+                FID_PERIOD_DIV_CODE:"D",
+
+                FID_ORG_ADJ_PRC:"1"
+
+            }
+
+        });
+
+
+
+        console.log(
+            "DAILY LENGTH",
+            response.data.output2?.length
+        );
+
+
+
+        return response.data.output2 || [];
+
+
+
+    }catch(error){
+
+
+        console.log(
+
+            "DAILY ERROR",
+
+            error.response?.data || error.message
+
+        );
+
+
+        return [];
+
+    }
+
+}
+
+
+
+// =======================================
+// 평균 계산
+// =======================================
+
+function average(arr){
+
+
+    if(!arr || arr.length===0)
+
+        return 0;
+
+
+
+    return Math.round(
+
+        arr.reduce(
+            (a,b)=>a+b,
+            0
+        )
+        /
+        arr.length
+
+    );
 
 }
 
@@ -198,22 +314,6 @@ return response.data.output2 || [];
 // 이동평균 계산
 // =======================================
 
-function average(arr){
-
-    if(arr.length===0)
-        return 0;
-
-
-    return Math.round(
-        arr.reduce((a,b)=>a+b,0)
-        /
-        arr.length
-    );
-
-}
-
-
-
 async function getMovingAverage(code){
 
 
@@ -222,40 +322,88 @@ async function getMovingAverage(code){
 
 
 
+    if(candles.length===0){
+
+
+        return {
+
+            ma5:0,
+
+            ma20:0,
+
+            ma60:0
+
+        };
+
+    }
+
+
+
     const prices =
+
     candles
+
     .slice(0,60)
+
     .map(
+
         item =>
         Number(item.stck_clpr)
+
+    )
+
+    .filter(
+        price=>price>0
     );
+
 
 
 
     return {
 
+
         ma5:
-        average(prices.slice(0,5)),
+
+        average(
+            prices.slice(0,5)
+        ),
+
 
 
         ma20:
-        average(prices.slice(0,20)),
+
+        average(
+            prices.slice(0,20)
+        ),
+
 
 
         ma60:
-        average(prices.slice(0,60))
+
+        average(
+            prices.slice(0,60)
+        )
+
 
     };
+
 
 }
 
 
 
+// =======================================
 
 module.exports = {
 
+
     getCurrentPrice,
 
+
+    getDailyPrice,
+
+
     getMovingAverage
+
 
 };
