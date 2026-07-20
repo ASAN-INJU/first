@@ -183,7 +183,12 @@ async function getDailyPrice(code){
 
 
 
-    return response.data.output2 || [];
+   console.log(
+    "DAILY DATA",
+    response.data
+);
+
+return response.data.output2 || [];
 
 }
 
