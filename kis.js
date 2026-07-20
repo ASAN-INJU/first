@@ -84,11 +84,12 @@ async function getAccessToken(){
 
 
 
+
 // =======================================
 // 현재가 조회
 // =======================================
 
-async function getDailyPrice(code){
+async function getCurrentPrice(code){
 
 
     // 캐시 확인
