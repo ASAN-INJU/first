@@ -12,6 +12,13 @@ let accessToken = null;
 let tokenTime = 0;
 
 
+// 일봉 데이터 캐시
+let dailyCache = {};
+let dailyCacheTime = {};
+
+const CACHE_TIME = 5 * 60 * 1000;
+
+
 // =======================================
 // Access Token
 // =======================================
