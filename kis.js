@@ -232,7 +232,16 @@ async function getDailyPrice(code){
                 FID_INPUT_ISCD:code,
 
 
-               FID_INPUT_DATE_1:"20250101",
+              const today =
+new Date()
+.toISOString()
+.slice(0,10)
+.replace(/-/g,"");
+
+
+FID_INPUT_DATE_1:"20240101",
+
+FID_INPUT_DATE_2:today,
                 FID_INPUT_DATE_2:
                 new Date()
                 .toISOString()
