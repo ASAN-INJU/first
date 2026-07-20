@@ -22,6 +22,54 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
 
+// =======================================
+// AI 단타 점수 분석
+// =======================================
+
+function analyzeStock(data){
+
+    let score = 0;
+
+
+    if(data.price > data.ma5)
+        score += 20;
+
+
+    if(data.ma5 > data.ma20)
+        score += 20;
+
+
+    if(data.ma20 > data.ma60)
+        score += 20;
+
+
+    if(data.change > 2)
+        score += 20;
+
+
+    if(data.volume > 1000000)
+        score += 20;
+
+
+    let signal = "관망";
+
+
+    if(score >= 80)
+        signal = "매수관심";
+
+    else if(score >= 60)
+        signal = "상승관찰";
+
+    else if(score < 40)
+        signal = "약세";
+
+
+    return {
+        score,
+        signal
+    };
+
+}
 
 // =======================================
 // 서버 확인
