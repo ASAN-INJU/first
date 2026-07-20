@@ -135,10 +135,11 @@ analyzeStock({
 
             ma20:ma.ma20,
 
-            ma60:ma.ma60
+            ma60:ma.ma60,
 
-        });
+analysis:analysis
 
+});
 
     }
     catch(error){
