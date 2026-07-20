@@ -232,8 +232,7 @@ async function getDailyPrice(code){
                 FID_INPUT_ISCD:code,
 
 
-                FID_INPUT_DATE_1:"20260101",
-
+               FID_INPUT_DATE_1:"20250101",
                 FID_INPUT_DATE_2:
                 new Date()
                 .toISOString()
