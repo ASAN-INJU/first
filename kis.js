@@ -70,6 +70,7 @@ async function getAccessToken(){
         );
 
         throw error;
+
     }
 
 }
@@ -82,19 +83,15 @@ async function getAccessToken(){
 
 async function getCurrentPrice(code){
 
-
     const token =
     await getAccessToken();
-
 
 
     const url =
     `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`;
 
 
-
     try{
-
 
         const response =
         await axios.get(
@@ -151,7 +148,6 @@ async function getCurrentPrice(code){
         };
 
 
-
     }catch(error){
 
 
@@ -190,6 +186,14 @@ async function getDailyPrice(code){
     await getAccessToken();
 
 
+    // 오늘 날짜
+    const today =
+    new Date()
+    .toISOString()
+    .slice(0,10)
+    .replace(/-/g,"");
+
+
 
     const url =
     `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
@@ -204,15 +208,16 @@ async function getDailyPrice(code){
             url,
             {
 
-
             headers:{
 
 
                 authorization:
                 `Bearer ${token}`,
 
+
                 appkey:
                 process.env.APP_KEY,
+
 
                 appsecret:
                 process.env.APP_SECRET,
@@ -232,24 +237,13 @@ async function getDailyPrice(code){
                 FID_INPUT_ISCD:code,
 
 
-              const today =
-new Date()
-.toISOString()
-.slice(0,10)
-.replace(/-/g,"");
+                FID_INPUT_DATE_1:"20240101",
 
-
-FID_INPUT_DATE_1:"20240101",
-
-FID_INPUT_DATE_2:today,
-                FID_INPUT_DATE_2:
-                new Date()
-                .toISOString()
-                .slice(0,10)
-                .replace(/-/g,""),
+                FID_INPUT_DATE_2:today,
 
 
                 FID_PERIOD_DIV_CODE:"D",
+
 
                 FID_ORG_ADJ_PRC:"1"
 
@@ -260,19 +254,9 @@ FID_INPUT_DATE_2:today,
 
 
         console.log(
-    "DAILY RESPONSE",
-    JSON.stringify(response.data).slice(0,1000)
-);
-
-console.log(
-    "DAILY LENGTH",
-    response.data.output2?.length
-);
-
-console.log(
-    "DAILY SAMPLE",
-    response.data.output2?.[0]
-);
+            "DAILY LENGTH",
+            response.data.output2?.length
+        );
 
 
         return response.data.output2 || [];
@@ -305,11 +289,9 @@ console.log(
 
 function average(arr){
 
-
     if(!arr || arr.length===0)
 
         return 0;
-
 
 
     return Math.round(
@@ -341,7 +323,6 @@ async function getMovingAverage(code){
 
     if(candles.length===0){
 
-
         return {
 
             ma5:0,
@@ -370,9 +351,10 @@ async function getMovingAverage(code){
     )
 
     .filter(
-        price=>price>0
-    );
 
+        price=>price>0
+
+    );
 
 
 
@@ -416,9 +398,7 @@ module.exports = {
 
     getCurrentPrice,
 
-
     getDailyPrice,
-
 
     getMovingAverage
 
