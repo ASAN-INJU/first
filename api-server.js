@@ -9,7 +9,8 @@ const express = require("express");
 const cors = require("cors");
 
 const {
-    getCurrentPrice
+    getCurrentPrice,
+    getMovingAverage
 } = require("./kis");
 
 
@@ -44,16 +45,16 @@ app.get(
 "/api/stock/:code",
 async(req,res)=>{
 
-
     try{
 
-
-        const code =
-        req.params.code;
-
+        const code = req.params.code;
 
         const stock =
         await getCurrentPrice(code);
+
+
+        const ma =
+        await getMovingAverage(code);
 
 
 
@@ -63,28 +64,23 @@ async(req,res)=>{
 
             code:code,
 
-            price:
-            stock.price,
+            price:stock.price,
 
-            change:
-            stock.change,
+            change:stock.change,
 
-            volume:
-            stock.volume,
+            volume:stock.volume,
 
-            ma5:0,
+            ma5:ma.ma5,
 
-            ma20:0,
+            ma20:ma.ma20,
 
-            ma60:0
+            ma60:ma.ma60
 
         });
 
 
-
     }
     catch(error){
-
 
         console.log(
             "API ERROR",
@@ -100,24 +96,6 @@ async(req,res)=>{
 
         });
 
-
     }
-
-
-});
-
-
-
-// =======================================
-// 시작
-// =======================================
-
-app.listen(
-PORT,
-()=>{
-
-console.log(
-`V12 Ultimate Server Running ${PORT}`
-);
 
 });
