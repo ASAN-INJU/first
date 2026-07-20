@@ -283,8 +283,18 @@ async function getDailyPrice(code){
         );
 
 
-        return response.data.output2 || [];
+        const candles =
+response.data.output2 || [];
 
+
+// 캐시 저장
+dailyCache[code] = candles;
+
+dailyCacheTime[code] =
+Date.now();
+
+
+return candles;
 
 
     }catch(error){
