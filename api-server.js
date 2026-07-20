@@ -1,6 +1,6 @@
 // =======================================
 // V12 Ultimate API Server
-// KIS API + 이동평균 분석
+// KIS 현재가 안정화 버전
 // =======================================
 
 require("dotenv").config();
@@ -9,8 +9,7 @@ const express = require("express");
 const cors = require("cors");
 
 const {
-    getCurrentPrice,
-    getMovingAverage
+    getCurrentPrice
 } = require("./kis");
 
 
@@ -23,9 +22,8 @@ app.use(express.json());
 const PORT = process.env.PORT || 10000;
 
 
-
 // =======================================
-// 기본 확인
+// 서버 확인
 // =======================================
 
 app.get("/", (req,res)=>{
@@ -39,7 +37,7 @@ app.get("/", (req,res)=>{
 
 
 // =======================================
-// 주가 + 이동평균 조회
+// 주가 조회
 // =======================================
 
 app.get(
@@ -54,18 +52,8 @@ async(req,res)=>{
         req.params.code;
 
 
-
-        // 현재가 조회
-
         const stock =
         await getCurrentPrice(code);
-
-
-
-        // 이동평균 조회
-
-        const ma =
-        await getMovingAverage(code);
 
 
 
@@ -75,29 +63,20 @@ async(req,res)=>{
 
             code:code,
 
-
             price:
             stock.price,
-
 
             change:
             stock.change,
 
-
             volume:
             stock.volume,
 
+            ma5:0,
 
-            ma5:
-            ma.ma5,
+            ma20:0,
 
-
-            ma20:
-            ma.ma20,
-
-
-            ma60:
-            ma.ma60
+            ma60:0
 
         });
 
@@ -117,8 +96,7 @@ async(req,res)=>{
 
             success:false,
 
-            message:
-            error.message
+            message:error.message
 
         });
 
@@ -130,9 +108,8 @@ async(req,res)=>{
 
 
 
-
 // =======================================
-// 서버 시작
+// 시작
 // =======================================
 
 app.listen(
