@@ -252,6 +252,11 @@ async function getDailyPrice(code){
 
 
         console.log(
+    "DAILY RESPONSE",
+    JSON.stringify(response.data).slice(0,1000)
+);
+
+console.log(
     "DAILY LENGTH",
     response.data.output2?.length
 );
