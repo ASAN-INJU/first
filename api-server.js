@@ -97,28 +97,76 @@ async(req,res)=>{
 
         const code = req.params.code;
 
-    const stock =
-await getCurrentPrice(code);
+
+        const stock =
+        await getCurrentPrice(code);
 
 
-const ma =
-await getMovingAverage(code);
+        const ma =
+        await getMovingAverage(code);
 
 
-const analysis =
-analyzeStock({
 
-    price:stock.price,
+        const analysis =
+        analyzeStock({
 
-    change:stock.change,
+            price:stock.price,
 
-    volume:stock.volume,
+            change:stock.change,
 
-    ma5:ma.ma5,
+            volume:stock.volume,
 
-    ma20:ma.ma20,
+            ma5:ma.ma5,
 
-    ma60:ma.ma60
+            ma20:ma.ma20,
+
+            ma60:ma.ma60
+
+        });
+
+
+
+        res.json({
+
+            success:true,
+
+            code:code,
+
+            price:stock.price,
+
+            change:stock.change,
+
+            volume:stock.volume,
+
+            ma5:ma.ma5,
+
+            ma20:ma.ma20,
+
+            ma60:ma.ma60,
+
+            analysis:analysis
+
+        });
+
+
+    }
+    catch(error){
+
+        console.log(
+            "API ERROR",
+            error.message
+        );
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+    }
 
 });
 
