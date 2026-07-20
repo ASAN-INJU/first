@@ -88,11 +88,28 @@ async function getAccessToken(){
 // 현재가 조회
 // =======================================
 
-async function getCurrentPrice(code){
+async function getDailyPrice(code){
+
+
+    // 캐시 확인
+    if(
+        dailyCache[code] &&
+        Date.now() - dailyCacheTime[code] < CACHE_TIME
+    ){
+
+        console.log(
+            "DAILY CACHE 사용",
+            code
+        );
+
+        return dailyCache[code];
+
+    }
+
+
 
     const token =
     await getAccessToken();
-
 
     const url =
     `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`;
