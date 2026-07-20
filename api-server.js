@@ -1,6 +1,6 @@
 // =======================================
 // V12 Ultimate API Server
-// KIS 현재가 안정화 버전
+// KIS + AI 단타 분석 버전
 // =======================================
 
 require("dotenv").config();
@@ -21,6 +21,7 @@ app.use(express.json());
 
 
 const PORT = process.env.PORT || 10000;
+
 
 // =======================================
 // AI 단타 점수 분석
@@ -51,6 +52,7 @@ function analyzeStock(data){
         score += 20;
 
 
+
     let signal = "관망";
 
 
@@ -65,17 +67,22 @@ function analyzeStock(data){
 
 
     return {
-        score,
-        signal
+
+        score:score,
+
+        signal:signal
+
     };
 
 }
+
+
 
 // =======================================
 // 서버 확인
 // =======================================
 
-app.get("/", (req,res)=>{
+app.get("/",(req,res)=>{
 
     res.send(
         "V12 Ultimate API Server Running"
@@ -86,24 +93,30 @@ app.get("/", (req,res)=>{
 
 
 // =======================================
-// 주가 조회
+// 주가 조회 API
 // =======================================
 
 app.get(
 "/api/stock/:code",
 async(req,res)=>{
 
+
     try{
 
-        const code = req.params.code;
+
+        const code =
+        req.params.code;
+
 
 
         const stock =
         await getCurrentPrice(code);
 
 
+
         const ma =
         await getMovingAverage(code);
+
 
 
         const analysis =
@@ -148,13 +161,16 @@ async(req,res)=>{
         });
 
 
+
     }
     catch(error){
+
 
         console.log(
             "API ERROR",
             error.message
         );
+
 
 
         res.status(500).json({
@@ -165,58 +181,12 @@ async(req,res)=>{
 
         });
 
-    }
-
-});
-
-res.json({
-
-
-});
-
-
-res.json({
-
-    success:true,
-
-    code:code,
-
-    price:stock.price,
-
-    change:stock.change,
-
-    volume:stock.volume,
-
-    ma5:ma.ma5,
-
-    ma20:ma.ma20,
-
-    ma60:ma.ma60,
-
-    analysis:analysis
-
-});
-
-    }
-    catch(error){
-
-        console.log(
-            "API ERROR",
-            error.message
-        );
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:error.message
-
-        });
 
     }
 
+
 });
+
 
 
 // =======================================
@@ -224,10 +194,11 @@ res.json({
 // =======================================
 
 app.listen(
-    PORT,
-    ()=>{
-        console.log(
-            `V12 Ultimate Server Running ${PORT}`
-        );
-    }
-);
+PORT,
+()=>{
+
+    console.log(
+        `V12 Ultimate Server Running ${PORT}`
+    );
+
+});
