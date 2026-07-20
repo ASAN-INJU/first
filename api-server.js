@@ -97,12 +97,33 @@ async(req,res)=>{
 
         const code = req.params.code;
 
-        const stock =
-        await getCurrentPrice(code);
+    const stock =
+await getCurrentPrice(code);
 
-        res.json({
+
 const ma =
 await getMovingAverage(code);
+
+
+const analysis =
+analyzeStock({
+
+    price:stock.price,
+
+    change:stock.change,
+
+    volume:stock.volume,
+
+    ma5:ma.ma5,
+
+    ma20:ma.ma20,
+
+    ma60:ma.ma60
+
+});
+
+
+res.json({
 
 
 const analysis =
