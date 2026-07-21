@@ -387,258 +387,343 @@ async function getDailyPrice(code) {
 
 // =======================================
 // 실제 KIS 일봉 API 호출
+// 호출 제한 대응 + 자동 재시도
 // =======================================
 
 async function fetchDailyPrice(code) {
 
+    const MAX_RETRY = 3;
 
-    // -----------------------------------
-    // API 호출 간격
-    // -----------------------------------
-
-    const now =
-        Date.now();
+    const RETRY_WAIT =
+        10000;
 
 
-    const elapsed =
-        now -
-        lastDailyRequestTime;
-
-
-    if (
-        elapsed <
-        DAILY_REQUEST_INTERVAL
+    for (
+        let attempt = 1;
+        attempt <= MAX_RETRY;
+        attempt++
     ) {
 
-        const waitTime =
-            DAILY_REQUEST_INTERVAL -
-            elapsed;
+        try {
+
+            // -----------------------------------
+            // API 호출 간격 확인
+            // -----------------------------------
+
+            const now =
+                Date.now();
+
+            const elapsed =
+                now -
+                lastDailyRequestTime;
 
 
-        console.log(
-            "DAILY API 대기",
-            waitTime,
-            "ms"
-        );
+            if (
+                elapsed <
+                DAILY_REQUEST_INTERVAL
+            ) {
+
+                const waitTime =
+                    DAILY_REQUEST_INTERVAL -
+                    elapsed;
 
 
-        await sleep(
-            waitTime
-        );
-
-    }
-
-
-    lastDailyRequestTime =
-        Date.now();
+                console.log(
+                    "DAILY API 대기",
+                    waitTime,
+                    "ms"
+                );
 
 
-    // -----------------------------------
-    // Access Token
-    // -----------------------------------
+                await sleep(
+                    waitTime
+                );
 
-    const token =
-        await getAccessToken();
-
-
-    // -----------------------------------
-    // 날짜
-    // -----------------------------------
-
-    const today =
-        new Date()
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "");
+            }
 
 
-    // -----------------------------------
-    // KIS 일봉 API
-    // -----------------------------------
+            // -----------------------------------
+            // 마지막 호출 시간 기록
+            // -----------------------------------
 
-    const url =
-        `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
-
-
-    try {
-
-        const response =
-            await axios.get(
-                url,
-                {
-
-                    headers: {
-
-                        authorization:
-                            `Bearer ${token}`,
-
-                        appkey:
-                            process.env.APP_KEY,
-
-                        appsecret:
-                            process.env.APP_SECRET,
-
-                        tr_id:
-                            "FHKST03010100"
-
-                    },
-
-                    params: {
-
-                        FID_COND_MRKT_DIV_CODE:
-                            "J",
-
-                        FID_INPUT_ISCD:
-                            code,
-
-                        FID_INPUT_DATE_1:
-                            "20240101",
-
-                        FID_INPUT_DATE_2:
-                            today,
-
-                        FID_PERIOD_DIV_CODE:
-                            "D",
-
-                        FID_ORG_ADJ_PRC:
-                            "1"
-
-                    }
-
-                }
-            );
-
-
-        const candles =
-            response.data.output2 || [];
-
-
-        console.log(
-            "DAILY LENGTH",
-            candles.length
-        );
-
-
-        // -----------------------------------
-        // 성공 데이터 저장
-        // -----------------------------------
-
-        if (
-            candles.length > 0
-        ) {
-
-            dailyCache[code] =
-                candles;
-
-
-            dailyCacheTime[code] =
+            lastDailyRequestTime =
                 Date.now();
 
 
-            lastSuccessfulDailyCache[code] =
-                candles;
+            console.log(
+                "DAILY API 요청",
+                code,
+                "시도:",
+                attempt,
+                "/",
+                MAX_RETRY
+            );
+
+
+            // -----------------------------------
+            // Access Token
+            // -----------------------------------
+
+            const token =
+                await getAccessToken();
+
+
+            // -----------------------------------
+            // 날짜
+            // -----------------------------------
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .slice(0, 10)
+                    .replace(/-/g, "");
+
+
+            // -----------------------------------
+            // KIS 일봉 API
+            // -----------------------------------
+
+            const url =
+                `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
+
+
+            const response =
+                await axios.get(
+                    url,
+                    {
+
+                        headers: {
+
+                            authorization:
+                                `Bearer ${token}`,
+
+                            appkey:
+                                process.env.APP_KEY,
+
+                            appsecret:
+                                process.env.APP_SECRET,
+
+                            tr_id:
+                                "FHKST03010100"
+
+                        },
+
+                        params: {
+
+                            FID_COND_MRKT_DIV_CODE:
+                                "J",
+
+                            FID_INPUT_ISCD:
+                                code,
+
+                            FID_INPUT_DATE_1:
+                                "20240101",
+
+                            FID_INPUT_DATE_2:
+                                today,
+
+                            FID_PERIOD_DIV_CODE:
+                                "D",
+
+                            FID_ORG_ADJ_PRC:
+                                "1"
+
+                        }
+
+                    }
+                );
+
+
+            // -----------------------------------
+            // 일봉 데이터
+            // -----------------------------------
+
+            const candles =
+                response.data.output2 || [];
 
 
             console.log(
-                "DAILY CACHE 저장",
-                code,
+                "DAILY LENGTH",
                 candles.length
             );
 
 
+            // -----------------------------------
+            // 성공
+            // -----------------------------------
+
+            if (
+                candles.length > 0
+            ) {
+
+                dailyCache[code] =
+                    candles;
+
+
+                dailyCacheTime[code] =
+                    Date.now();
+
+
+                lastSuccessfulDailyCache[code] =
+                    candles;
+
+
+                console.log(
+                    "DAILY CACHE 저장",
+                    code,
+                    candles.length
+                );
+
+
+                console.log(
+                    "LAST SUCCESS DAILY 저장",
+                    code
+                );
+
+
+                return candles;
+
+            }
+
+
+            // -----------------------------------
+            // 데이터 없음
+            // -----------------------------------
+
             console.log(
-                "LAST SUCCESS DAILY 저장",
+                "DAILY DATA EMPTY",
                 code
             );
 
+
+            return [];
+
+
         }
 
+        catch (error) {
 
-        return candles;
+            const errorData =
+                error.response?.data ||
+                error.message;
 
-
-    }
-
-    catch (error) {
-
-        const errorData =
-            error.response?.data ||
-            error.message;
-
-
-        console.log(
-            "DAILY ERROR",
-            errorData
-        );
-
-
-        // --------------------------------
-        // API 호출 제한
-        // --------------------------------
-
-        if (
-            error.response?.data?.msg_cd ===
-            "EGW00201"
-        ) {
 
             console.log(
-                "KIS API 호출 제한 발생"
+                "DAILY ERROR",
+                errorData
             );
 
 
-            // --------------------------------
-           // 1. 10분 캐시
-            // --------------------------------
+            // -----------------------------------
+            // KIS 호출 제한
+            // -----------------------------------
 
             if (
-                dailyCache[code] &&
-                dailyCache[code].length > 0
+                error.response?.data?.msg_cd ===
+                "EGW00201"
             ) {
 
                 console.log(
-                    "기존 DAILY CACHE 사용",
-                    code
+                    "KIS API 호출 제한 발생"
                 );
 
 
-                return dailyCache[code];
+                // -----------------------------------
+                // 캐시 데이터 사용
+                // -----------------------------------
+
+                if (
+                    dailyCache[code] &&
+                    dailyCache[code].length > 0
+                ) {
+
+                    console.log(
+                        "기존 DAILY CACHE 사용",
+                        code
+                    );
+
+
+                    return dailyCache[code];
+
+                }
+
+
+                // -----------------------------------
+                // 마지막 성공 데이터 사용
+                // -----------------------------------
+
+                if (
+                    lastSuccessfulDailyCache[code] &&
+                    lastSuccessfulDailyCache[code].length > 0
+                ) {
+
+                    console.log(
+                        "마지막 성공 DAILY 데이터 사용",
+                        code
+                    );
+
+
+                    return
+                        lastSuccessfulDailyCache[code];
+
+                }
+
+
+                // -----------------------------------
+                // 재시도
+                // -----------------------------------
+
+                if (
+                    attempt <
+                    MAX_RETRY
+                ) {
+
+                    console.log(
+                        "KIS 호출 제한 →",
+                        RETRY_WAIT / 1000,
+                        "초 후 재시도"
+                    );
+
+
+                    await sleep(
+                        RETRY_WAIT
+                    );
+
+
+                    continue;
+
+                }
+
+
+                console.log(
+                    "DAILY API 재시도 실패"
+                );
+
+
+                return [];
 
             }
 
 
-            // --------------------------------
-            // 2. 마지막 성공 데이터
-            // --------------------------------
+            // -----------------------------------
+            // 기타 오류
+            // -----------------------------------
 
-            if (
-                lastSuccessfulDailyCache[code] &&
-                lastSuccessfulDailyCache[code].length > 0
-            ) {
-
-                console.log(
-                    "마지막 성공 DAILY 데이터 사용",
-                    code
-                );
+            console.log(
+                "DAILY API 기타 오류"
+            );
 
 
-                return
-                    lastSuccessfulDailyCache[code];
-
-            }
+            return [];
 
         }
 
-
-        // --------------------------------
-        // 기타 오류
-        // --------------------------------
-
-        return [];
-
     }
 
-}
 
+    return [];
+
+}
 
 // =======================================
 // 평균 계산
