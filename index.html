@@ -187,6 +187,37 @@ if ("serviceWorker" in navigator) {
 
 </script>
 
+<!-- =====================================
+     자동 단타 후보
+===================================== -->
 
+<div
+    id="autoScanSection"
+    class="auto-scan-section"
+>
+
+    <button
+        id="scanBtn"
+        onclick="scanStocks()"
+    >
+        🔍 오늘의 단타 후보 찾기
+    </button>
+
+
+    <div
+        id="scanResult"
+        class="scan-result"
+    >
+
+        <div class="scan-empty">
+
+            버튼을 눌러
+            오늘의 단타 후보를 찾아보세요.
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 </html>
