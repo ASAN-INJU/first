@@ -1262,6 +1262,34 @@ async function scanStocks() {
 }
 
 /* =====================================
+   종목 코드 → 종목명 찾기
+===================================== */
+
+function getStockName(code) {
+
+    const stock =
+        stocks.find(
+            item =>
+                String(
+                    item.code
+                ) ===
+                String(
+                    code
+                )
+        );
+
+
+    if (stock) {
+
+        return stock.name;
+
+    }
+
+
+    return code;
+
+}
+/* =====================================
    AI 단타 점수 분석
 ===================================== */
 
