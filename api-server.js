@@ -365,15 +365,40 @@ app.get(
             // 종목 코드
             // --------------------------------
 
-            const code =
-                req.params.code;
+           const code =
+    req.params.code.trim();
+
+console.log(
+    "STOCK REQUEST",
+    code
+);
 
 
-            console.log(
-                "STOCK REQUEST",
-                code
-            );
+// --------------------------------
+// 종목코드 유효성 검사
+// --------------------------------
 
+if (!/^\d{6}$/.test(code)) {
+
+    console.log(
+        "INVALID STOCK CODE",
+        code
+    );
+
+    return res.status(400).json({
+
+        success:
+            false,
+
+        message:
+            "종목코드는 6자리 숫자를 입력해주세요.",
+
+        code:
+            code
+
+    });
+
+}
 
             // --------------------------------
             // 현재가 조회
