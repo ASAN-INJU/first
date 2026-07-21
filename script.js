@@ -5,207 +5,240 @@
 ===================================== */
 
 
-// Render API 주소
+/* =====================================
+   Render API 서버
+===================================== */
+
 const API_SERVER =
-"https://v11-api-server.onrender.com";
+    "https://first-gqm8.onrender.com";
 
 
-// 종목 데이터
+/* =====================================
+   전역 변수
+===================================== */
+
 let stocks = [];
 
-
-// 차트 객체
 let chart = null;
 
 
+/* =====================================
+   페이지 시작
+===================================== */
 
-// 페이지 시작
 document.addEventListener(
-"DOMContentLoaded",
-()=>{
+    "DOMContentLoaded",
+    () => {
+
+        loadStocks();
 
 
-    loadStocks();
+        const searchBtn =
+            document.getElementById(
+                "searchBtn"
+            );
 
 
-    document
-    .getElementById("searchBtn")
-    .addEventListener(
-        "click",
-        searchStock
-    );
+        if (searchBtn) {
+
+            searchBtn.addEventListener(
+                "click",
+                searchStock
+            );
+
+        }
 
 
-    document
-    .getElementById("stockCode")
-    .addEventListener(
-        "input",
-        autoComplete
-    );
+        const stockCode =
+            document.getElementById(
+                "stockCode"
+            );
 
 
-});
+        if (stockCode) {
+
+            stockCode.addEventListener(
+                "input",
+                autoComplete
+            );
+
+        }
+
+    }
+);
 
 
+/* =====================================
+   종목 리스트 불러오기
+===================================== */
+
+async function loadStocks() {
+
+    try {
+
+        const response =
+            await fetch(
+                "stocks.json"
+            );
 
 
+        if (!response.ok) {
 
-// ===================================
-// 종목 리스트 불러오기
-// ===================================
+            throw new Error(
+                "stocks.json 불러오기 실패"
+            );
 
-async function loadStocks(){
-
-
-    try{
-
-
-        const res =
-        await fetch(
-            "stocks.json"
-        );
+        }
 
 
         stocks =
-        await res.json();
+            await response.json();
 
-
-    }
-
-    catch(e){
 
         console.log(
-            "stocks.json 없음"
+            "종목 리스트 로딩 완료",
+            stocks.length
         );
 
     }
 
+    catch (error) {
+
+        console.error(
+            "종목 리스트 오류",
+            error
+        );
+
+        stocks = [];
+
+    }
 
 }
 
 
+/* =====================================
+   자동완성
+===================================== */
 
+function autoComplete() {
 
-
-// ===================================
-// 자동완성
-// ===================================
-
-
-function autoComplete(){
-
-
-    const input =
-    document
-    .getElementById("stockCode")
-    .value
-    .trim();
+    const inputElement =
+        document.getElementById(
+            "stockCode"
+        );
 
 
     const box =
-    document
-    .getElementById("suggestions");
+        document.getElementById(
+            "suggestions"
+        );
 
 
-    box.innerHTML="";
-
-
-    if(
-        input.length < 1
-    ){
+    if (!inputElement || !box) {
 
         return;
 
     }
 
 
+    const input =
+        inputElement.value
+        .trim();
+
+
+    box.innerHTML = "";
+
+
+    if (
+        input.length < 1
+    ) {
+
+        return;
+
+    }
+
 
     const result =
-    stocks
-    .filter(
-        s=>
-        s.name.includes(input)
-        ||
-        s.code.includes(input)
-    )
-    .slice(0,10);
+        stocks
+        .filter(
+            stock =>
 
+                String(
+                    stock.name || ""
+                )
+                .includes(input)
 
+                ||
 
-    result.forEach(
-    stock=>{
-
-
-        const div =
-        document.createElement(
-            "div"
+                String(
+                    stock.code || ""
+                )
+                .includes(input)
+        )
+        .slice(
+            0,
+            10
         );
 
 
-        div.className =
-        "suggestion-item";
+    result.forEach(
+        stock => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
 
 
-        div.innerHTML =
-        `${stock.name}
-        (${stock.code})`;
+            div.className =
+                "suggestion-item";
 
 
-
-        div.onclick =
-        ()=>{
-
-
-            document
-            .getElementById(
-                "stockCode"
-            )
-            .value =
-            stock.code;
+            div.innerText =
+                `${stock.name} (${stock.code})`;
 
 
-            box.innerHTML="";
+            div.addEventListener(
+                "click",
+                () => {
+
+                    inputElement.value =
+                        stock.code;
 
 
-        };
+                    box.innerHTML =
+                        "";
+
+                }
+            );
 
 
-        box.appendChild(div);
+            box.appendChild(
+                div
+            );
 
-
-    });
-
+        }
+    );
 
 }
 
 
+/* =====================================
+   주식 조회
+===================================== */
+
+async function searchStock() {
+
+    const inputElement =
+        document.getElementById(
+            "stockCode"
+        );
 
 
-
-
-// ===================================
-// 주식 조회
-// ===================================
-
-
-async function searchStock(){
-
-
-
-    const code =
-    document
-    .getElementById(
-        "stockCode"
-    )
-    .value
-    .trim();
-
-
-
-    if(!code){
+    if (!inputElement) {
 
         alert(
-            "종목코드를 입력하세요"
+            "종목 입력창을 찾을 수 없습니다."
         );
 
         return;
@@ -213,37 +246,92 @@ async function searchStock(){
     }
 
 
+    const code =
+        inputElement.value
+        .trim();
 
-    try{
 
+    if (!code) {
+
+        alert(
+            "종목코드를 입력하세요."
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        "주식 조회 시작:",
+        code
+    );
+
+
+    const apiUrl =
+        `${API_SERVER}/api/stock/${encodeURIComponent(code)}`;
+
+
+    console.log(
+        "API 요청:",
+        apiUrl
+    );
+
+
+    try {
 
         const response =
-        await fetch(
-        `${API_SERVER}/api/stock/${code}`
+            await fetch(
+                apiUrl,
+                {
+                    method:
+                        "GET",
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        console.log(
+            "API 응답 상태:",
+            response.status
         );
 
 
+        if (!response.ok) {
+
+            throw new Error(
+                `서버 응답 오류: ${response.status}`
+            );
+
+        }
+
+
         const data =
-        await response.json();
+            await response.json();
 
 
+        console.log(
+            "API 데이터:",
+            data
+        );
 
-        console.log(data);
 
-
-
-        if(
+        if (
             data.success === false
-        ){
+        ) {
 
             alert(
-                "조회 실패"
+                data.message ||
+                "주가 조회에 실패했습니다."
             );
 
             return;
 
         }
-
 
 
         displayStock(
@@ -253,325 +341,457 @@ async function searchStock(){
 
     }
 
+    catch (error) {
 
-    catch(error){
-
-
-        console.error(error);
+        console.error(
+            "주식 조회 오류:",
+            error
+        );
 
 
         alert(
-            "서버 연결 실패"
+            "서버 연결 실패\n\n" +
+            "API 서버:\n" +
+            API_SERVER +
+            "\n\n" +
+            "오류:\n" +
+            error.message
         );
 
+    }
+
+}
+
+
+/* =====================================
+   화면 표시
+===================================== */
+
+function displayStock(
+    data
+) {
+
+    const stockName =
+        document.getElementById(
+            "stockName"
+        );
+
+
+    const price =
+        document.getElementById(
+            "price"
+        );
+
+
+    const change =
+        document.getElementById(
+            "change"
+        );
+
+
+    const volume =
+        document.getElementById(
+            "volume"
+        );
+
+
+    const ma5 =
+        document.getElementById(
+            "ma5"
+        );
+
+
+    const ma20 =
+        document.getElementById(
+            "ma20"
+        );
+
+
+    const ma60 =
+        document.getElementById(
+            "ma60"
+        );
+
+
+    if (stockName) {
+
+        stockName.innerText =
+            data.name ||
+            data.code ||
+            "종목";
 
     }
 
 
+    if (price) {
+
+        price.innerText =
+            Number(
+                data.price || 0
+            )
+            .toLocaleString() +
+            "원";
+
+    }
+
+
+    if (change) {
+
+        change.innerText =
+            Number(
+                data.change || 0
+            ) +
+            "%";
+
+    }
+
+
+    if (volume) {
+
+        volume.innerText =
+            Number(
+                data.volume || 0
+            )
+            .toLocaleString();
+
+    }
+
+
+    if (ma5) {
+
+        ma5.innerText =
+            data.ma5 ??
+            "-";
+
+    }
+
+
+    if (ma20) {
+
+        ma20.innerText =
+            data.ma20 ??
+            "-";
+
+    }
+
+
+    if (ma60) {
+
+        ma60.innerText =
+            data.ma60 ??
+            "-";
+
+    }
+
+
+    analyzeStock(
+        data
+    );
+
+
+    drawChart(
+        data
+    );
 
 }
 
 
+/* =====================================
+   AI 단타 점수 분석
+===================================== */
 
+function analyzeStock(
+    data
+) {
 
-
-
-
-// ===================================
-// 화면 표시
-// ===================================
-
-
-function displayStock(data){
-
-
-
-    document
-    .getElementById(
-        "stockName"
-    )
-    .innerText =
-    data.name || "종목";
-
-
-
-    document
-    .getElementById(
-        "price"
-    )
-    .innerText =
-    Number(
-        data.price || 0
-    )
-    .toLocaleString()
-    +"원";
-
-
-
-    document
-    .getElementById(
-        "change"
-    )
-    .innerText =
-    data.change || 0
-    +"%";
-
-
-
-    document
-    .getElementById(
-        "volume"
-    )
-    .innerText =
-    Number(
-        data.volume || 0
-    )
-    .toLocaleString();
-
-
-
-    document
-    .getElementById(
-        "ma5"
-    )
-    .innerText =
-    data.ma5 || "-";
-
-
-
-    document
-    .getElementById(
-        "ma20"
-    )
-    .innerText =
-    data.ma20 || "-";
-
-
-
-    document
-    .getElementById(
-        "ma60"
-    )
-    .innerText =
-    data.ma60 || "-";
-
-
-
-    analyzeStock(data);
-
-
-
-    drawChart(data);
-
-
-
-}
-
-
-
-
-
-
-
-
-// ===================================
-// AI 단타 점수
-// ===================================
-
-
-function analyzeStock(data){
-
+    /*
+       서버에서 계산한 AI 분석 결과가 있으면
+       서버 결과를 우선 사용합니다.
+    */
 
 
     let score = 50;
 
+    let signal =
+        "관망";
 
 
-    const change =
-    Number(
-        data.change || 0
-    );
+    if (
+        data.analysis
+        &&
+        typeof data.analysis.score
+            !== "undefined"
+    ) {
+
+        score =
+            Number(
+                data.analysis.score
+            );
 
 
+        signal =
+            data.analysis.signal ||
+            "관망";
 
-    const volume =
-    Number(
-        data.volume || 0
-    );
+    }
+
+    else {
+
+        const change =
+            Number(
+                data.change || 0
+            );
 
 
+        const volume =
+            Number(
+                data.volume || 0
+            );
 
-    if(change > 2){
 
-        score +=10;
+        if (
+            change > 2
+        ) {
+
+            score += 10;
+
+        }
+
+
+        if (
+            change < -3
+        ) {
+
+            score -= 10;
+
+        }
+
+
+        if (
+            volume > 1000000
+        ) {
+
+            score += 10;
+
+        }
+
+
+        if (
+            score > 100
+        ) {
+
+            score = 100;
+
+        }
+
+
+        if (
+            score < 0
+        ) {
+
+            score = 0;
+
+        }
+
+
+        if (
+            score >= 80
+        ) {
+
+            signal =
+                "매수 관심";
+
+        }
+
+        else if (
+            score >= 60
+        ) {
+
+            signal =
+                "상승관찰";
+
+        }
+
+        else {
+
+            signal =
+                "약세";
+
+        }
 
     }
 
 
-
-    if(change < -3){
-
-        score -=10;
-
-    }
+    const scoreElement =
+        document.getElementById(
+            "score"
+        );
 
 
-
-    if(volume > 1000000){
-
-        score +=10;
-
-    }
+    const recommendElement =
+        document.getElementById(
+            "recommend"
+        );
 
 
-
-    if(score >100){
-
-        score=100;
-
-    }
+    const analysisElement =
+        document.getElementById(
+            "analysis"
+        );
 
 
-    if(score <0){
+    if (scoreElement) {
 
-        score=0;
+        scoreElement.innerText =
+            score +
+            "점";
 
     }
 
 
+    if (recommendElement) {
 
-
-    document
-    .getElementById(
-        "score"
-    )
-    .innerText =
-    score+"점";
-
-
-
-    let text="관망";
-
-
-    if(score>=80){
-
-        text="🔥 매수 관심";
-
-    }
-
-    else if(score>=60){
-
-        text="관심 종목";
-
-    }
-
-    else{
-
-        text="대기";
+        recommendElement.innerText =
+            signal;
 
     }
 
 
+    if (analysisElement) {
 
-    document
-    .getElementById(
-        "recommend"
-    )
-    .innerText =
-    text;
+        analysisElement.innerText =
 
-
-
-    document
-    .getElementById(
-        "analysis"
-    )
-    .innerText =
-    `
-AI 분석 결과
+`AI 분석 결과
 
 점수 : ${score}점
 
-등락률 : ${change}%
+등락률 : ${Number(
+    data.change || 0
+)}%
 
-거래량 : ${volume.toLocaleString()}
+거래량 : ${Number(
+    data.volume || 0
+).toLocaleString()}
 
-단타 기준으로 참고용 분석입니다.
-`;
+MA5 : ${data.ma5 ?? "-"}
 
+MA20 : ${data.ma20 ?? "-"}
 
+MA60 : ${data.ma60 ?? "-"}
+
+판정 : ${signal}
+
+단타 기준 참고용 분석입니다.`;
+
+    }
 
 }
 
 
+/* =====================================
+   차트
+===================================== */
+
+function drawChart(
+    data
+) {
+
+    const canvas =
+        document.getElementById(
+            "priceChart"
+        );
 
 
+    if (
+        !canvas
+    ) {
 
+        console.log(
+            "priceChart 없음"
+        );
 
-
-// ===================================
-// 차트
-// ===================================
-
-
-function drawChart(data){
-
-
-
-    const ctx =
-    document
-    .getElementById(
-        "priceChart"
-    );
-
-
-
-    if(chart){
-
-        chart.destroy();
+        return;
 
     }
 
 
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        console.error(
+            "Chart.js가 로드되지 않았습니다."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        chart
+    ) {
+
+        chart.destroy();
+
+        chart = null;
+
+    }
+
 
     chart =
-    new Chart(
-        ctx,
-        {
+        new Chart(
+            canvas,
+            {
 
-            type:"line",
+                type:
+                    "line",
 
-            data:{
 
-                labels:[
-                    "현재"
-                ],
+                data: {
 
-                datasets:[
+                    labels: [
+                        "현재"
+                    ],
 
-                    {
 
-                    label:"현재가",
+                    datasets: [
 
-                    data:[
-                        data.price
+                        {
+
+                            label:
+                                "현재가",
+
+
+                            data: [
+
+                                Number(
+                                    data.price ||
+                                    0
+                                )
+
+                            ]
+
+                        }
+
                     ]
 
-                    }
+                },
 
-                ]
 
-            },
+                options: {
 
-            options:{
+                    responsive:
+                        true,
 
-                responsive:true
+
+                    maintainAspectRatio:
+                        false
+
+                }
 
             }
-
-        }
-
-    );
-
+        );
 
 }
