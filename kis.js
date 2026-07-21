@@ -8,73 +8,96 @@ require("dotenv").config();
 const axios = require("axios");
 
 
-let accessToken = null;
-let tokenTime = 0;
-
-
-// 일봉 데이터 캐시
-let dailyCache = {};
-let dailyCacheTime = {};
-
-const CACHE_TIME = 5 * 60 * 1000;
-
-
 // =======================================
 // Access Token
 // =======================================
 
-async function getAccessToken(){
+let accessToken = null;
+let tokenTime = 0;
 
-    if(
+
+// =======================================
+// 일봉 데이터 캐시
+// =======================================
+
+let dailyCache = {};
+let dailyCacheTime = {};
+
+const CACHE_TIME =
+    5 * 60 * 1000;
+
+
+// =======================================
+// Access Token 발급
+// =======================================
+
+async function getAccessToken() {
+
+    if (
         accessToken &&
-        Date.now() - tokenTime < 23 * 60 * 60 * 1000
-    ){
+        Date.now() - tokenTime <
+        23 * 60 * 60 * 1000
+    ) {
+
         return accessToken;
+
     }
 
 
     const url =
-    `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
+        `${process.env.KIS_BASE_URL}/oauth2/tokenP`;
 
 
-    try{
+    try {
 
         const response =
-        await axios.post(
-            url,
-            {
-                grant_type:"client_credentials",
-                appkey:process.env.APP_KEY,
-                appsecret:process.env.APP_SECRET
-            },
-            {
-                headers:{
-                    "content-type":"application/json"
+            await axios.post(
+                url,
+                {
+                    grant_type:
+                        "client_credentials",
+
+                    appkey:
+                        process.env.APP_KEY,
+
+                    appsecret:
+                        process.env.APP_SECRET
+                },
+                {
+                    headers: {
+                        "content-type":
+                            "application/json"
+                    }
                 }
-            }
-        );
+            );
 
 
         accessToken =
-        response.data.access_token;
+            response.data.access_token;
 
 
         tokenTime =
-        Date.now();
+            Date.now();
 
 
-        console.log("KIS TOKEN 발급 성공");
+        console.log(
+            "KIS TOKEN 발급 성공"
+        );
 
 
         return accessToken;
 
 
-    }catch(error){
+    }
+
+    catch (error) {
 
         console.log(
             "TOKEN ERROR",
-            error.response?.data || error.message
+            error.response?.data ||
+            error.message
         );
+
 
         throw error;
 
@@ -83,78 +106,67 @@ async function getAccessToken(){
 }
 
 
-
-
 // =======================================
 // 현재가 조회
 // =======================================
 
-async function getCurrentPrice(code){
-
-
-    // 캐시 확인
-    if(
-        dailyCache[code] &&
-        Date.now() - dailyCacheTime[code] < CACHE_TIME
-    ){
-
-        console.log(
-            "DAILY CACHE 사용",
-            code
-        );
-
-        return dailyCache[code];
-
-    }
-
-
+async function getCurrentPrice(code) {
 
     const token =
-    await getAccessToken();
+        await getAccessToken();
+
 
     const url =
-    `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`;
+        `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price`;
 
 
-    try{
+    try {
 
         const response =
-        await axios.get(
-            url,
-            {
+            await axios.get(
+                url,
+                {
 
-            headers:{
+                    headers: {
 
-                authorization:
-                `Bearer ${token}`,
+                        authorization:
+                            `Bearer ${token}`,
 
-                appkey:
-                process.env.APP_KEY,
+                        appkey:
+                            process.env.APP_KEY,
 
-                appsecret:
-                process.env.APP_SECRET,
+                        appsecret:
+                            process.env.APP_SECRET,
 
-                tr_id:
-                "FHKST01010100"
+                        tr_id:
+                            "FHKST01010100"
 
-            },
+                    },
 
 
-            params:{
+                    params: {
 
-                FID_COND_MRKT_DIV_CODE:"J",
+                        FID_COND_MRKT_DIV_CODE:
+                            "J",
 
-                FID_INPUT_ISCD:code
+                        FID_INPUT_ISCD:
+                            code
 
-            }
+                    }
 
-        });
-
+                }
+            );
 
 
         const data =
-        response.data.output;
+            response.data.output;
 
+
+        console.log(
+            "CURRENT PRICE",
+            code,
+            data?.stck_prpr
+        );
 
 
         return {
@@ -162,151 +174,173 @@ async function getCurrentPrice(code){
             code,
 
             price:
-            Number(data.stck_prpr),
+                Number(
+                    data?.stck_prpr || 0
+                ),
 
             change:
-            Number(data.prdy_ctrt),
+                Number(
+                    data?.prdy_ctrt || 0
+                ),
 
             volume:
-            Number(data.acml_vol)
+                Number(
+                    data?.acml_vol || 0
+                )
 
         };
 
 
-    }catch(error){
+    }
 
+    catch (error) {
 
         console.log(
             "PRICE ERROR",
-            error.response?.data || error.message
+            error.response?.data ||
+            error.message
         );
 
 
-        return {
-
-            code,
-
-            price:0,
-
-            change:0,
-
-            volume:0
-
-        };
+        throw error;
 
     }
 
 }
 
 
-
 // =======================================
 // 일봉 데이터 조회
 // =======================================
 
-async function getDailyPrice(code){
+async function getDailyPrice(code) {
+
+    // 캐시 확인
+    if (
+        dailyCache[code] &&
+        Date.now() -
+        dailyCacheTime[code] <
+        CACHE_TIME
+    ) {
+
+        console.log(
+            "DAILY CACHE 사용",
+            code
+        );
+
+
+        return dailyCache[code];
+
+    }
 
 
     const token =
-    await getAccessToken();
+        await getAccessToken();
 
 
-    // 오늘 날짜
     const today =
-    new Date()
-    .toISOString()
-    .slice(0,10)
-    .replace(/-/g,"");
-
+        new Date()
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "");
 
 
     const url =
-    `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
+        `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
 
 
-
-    try{
-
+    try {
 
         const response =
-        await axios.get(
-            url,
-            {
+            await axios.get(
+                url,
+                {
 
-            headers:{
+                    headers: {
 
+                        authorization:
+                            `Bearer ${token}`,
 
-                authorization:
-                `Bearer ${token}`,
+                        appkey:
+                            process.env.APP_KEY,
 
+                        appsecret:
+                            process.env.APP_SECRET,
 
-                appkey:
-                process.env.APP_KEY,
+                        tr_id:
+                            "FHKST03010100"
 
-
-                appsecret:
-                process.env.APP_SECRET,
-
-
-                tr_id:
-                "FHKST03010100"
-
-            },
+                    },
 
 
-            params:{
+                    params: {
+
+                        FID_COND_MRKT_DIV_CODE:
+                            "J",
+
+                        FID_INPUT_ISCD:
+                            code,
+
+                        FID_INPUT_DATE_1:
+                            "20240101",
+
+                        FID_INPUT_DATE_2:
+                            today,
+
+                        FID_PERIOD_DIV_CODE:
+                            "D",
+
+                        FID_ORG_ADJ_PRC:
+                            "1"
+
+                    }
+
+                }
+            );
 
 
-                FID_COND_MRKT_DIV_CODE:"J",
-
-                FID_INPUT_ISCD:code,
-
-
-                FID_INPUT_DATE_1:"20240101",
-
-                FID_INPUT_DATE_2:today,
-
-
-                FID_PERIOD_DIV_CODE:"D",
-
-
-                FID_ORG_ADJ_PRC:"1"
-
-            }
-
-        });
-
+        const candles =
+            response.data.output2 || [];
 
 
         console.log(
             "DAILY LENGTH",
-            response.data.output2?.length
+            candles.length
         );
 
 
-        const candles =
-response.data.output2 || [];
+        if (
+            candles.length > 0
+        ) {
+
+            console.log(
+                "DAILY FIRST",
+                candles[0]
+            );
+
+        }
 
 
-// 캐시 저장
-dailyCache[code] = candles;
-
-dailyCacheTime[code] =
-Date.now();
+        // 캐시 저장
+        dailyCache[code] =
+            candles;
 
 
-return candles;
+        dailyCacheTime[code] =
+            Date.now();
 
 
-    }catch(error){
+        return candles;
 
+
+    }
+
+    catch (error) {
 
         console.log(
-
             "DAILY ERROR",
-
-            error.response?.data || error.message
-
+            error.response?.data ||
+            error.message
         );
 
 
@@ -317,22 +351,27 @@ return candles;
 }
 
 
-
 // =======================================
 // 평균 계산
 // =======================================
 
-function average(arr){
+function average(arr) {
 
-    if(!arr || arr.length===0)
+    if (
+        !arr ||
+        arr.length === 0
+    ) {
 
         return 0;
+
+    }
 
 
     return Math.round(
 
         arr.reduce(
-            (a,b)=>a+b,
+            (sum, value) =>
+                sum + value,
             0
         )
         /
@@ -343,99 +382,111 @@ function average(arr){
 }
 
 
-
 // =======================================
 // 이동평균 계산
 // =======================================
 
-async function getMovingAverage(code){
-
+async function getMovingAverage(code) {
 
     const candles =
-    await getDailyPrice(code);
+        await getDailyPrice(code);
 
 
+    console.log(
+        "CANDLES LENGTH",
+        candles.length
+    );
 
-    if(candles.length===0){
+
+    if (
+        candles.length === 0
+    ) {
 
         return {
 
-            ma5:0,
+            ma5: 0,
 
-            ma20:0,
+            ma20: 0,
 
-            ma60:0
+            ma60: 0
 
         };
 
     }
 
 
-
     const prices =
 
-    candles
+        candles
 
-    .slice(0,60)
+        .map(
+            item =>
+                Number(
+                    item.stck_clpr
+                )
+        )
 
-    .map(
+        .filter(
+            price =>
+                price > 0
+        );
 
-        item =>
-        Number(item.stck_clpr)
 
-    )
-
-    .filter(
-
-        price=>price>0
-
+    console.log(
+        "PRICE COUNT",
+        prices.length
     );
 
+
+    if (
+        prices.length === 0
+    ) {
+
+        return {
+
+            ma5: 0,
+
+            ma20: 0,
+
+            ma60: 0
+
+        };
+
+    }
 
 
     return {
 
-
         ma5:
-
-        average(
-            prices.slice(0,5)
-        ),
-
-
+            average(
+                prices.slice(0, 5)
+            ),
 
         ma20:
-
-        average(
-            prices.slice(0,20)
-        ),
-
-
+            average(
+                prices.slice(0, 20)
+            ),
 
         ma60:
-
-        average(
-            prices.slice(0,60)
-        )
-
+            average(
+                prices.slice(0, 60)
+            )
 
     };
-
 
 }
 
 
-
+// =======================================
+// Export
 // =======================================
 
 module.exports = {
-
 
     getCurrentPrice,
 
     getDailyPrice,
 
     getMovingAverage
-
 
 };
