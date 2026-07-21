@@ -1,6 +1,7 @@
 // =======================================
 // V12 Ultimate KIS API 연결 모듈
 // 현재가 + 일봉 + 이동평균 계산
+// API 호출 제한 대응 안정화 버전
 // =======================================
 
 require("dotenv").config();
@@ -25,6 +26,30 @@ let dailyCacheTime = {};
 
 const CACHE_TIME =
     5 * 60 * 1000;
+
+
+// =======================================
+// API 호출 간격 제한
+// =======================================
+
+let lastDailyRequestTime = 0;
+
+const DAILY_REQUEST_INTERVAL =
+    2000;
+
+
+// =======================================
+// 잠시 기다리기
+// =======================================
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(resolve, ms)
+    );
+
+}
 
 
 // =======================================
@@ -143,7 +168,6 @@ async function getCurrentPrice(code) {
 
                     },
 
-
                     params: {
 
                         FID_COND_MRKT_DIV_CODE:
@@ -211,13 +235,18 @@ async function getCurrentPrice(code) {
 
 // =======================================
 // 일봉 데이터 조회
+// API 호출 제한 대응
 // =======================================
 
 async function getDailyPrice(code) {
 
-    // 캐시 확인
+    // -----------------------------------
+    // 1. 캐시 확인
+    // -----------------------------------
+
     if (
         dailyCache[code] &&
+        dailyCache[code].length > 0 &&
         Date.now() -
         dailyCacheTime[code] <
         CACHE_TIME
@@ -234,9 +263,58 @@ async function getDailyPrice(code) {
     }
 
 
+    // -----------------------------------
+    // 2. API 호출 간격 조절
+    // -----------------------------------
+
+    const now =
+        Date.now();
+
+
+    const elapsed =
+        now -
+        lastDailyRequestTime;
+
+
+    if (
+        elapsed <
+        DAILY_REQUEST_INTERVAL
+    ) {
+
+        const waitTime =
+            DAILY_REQUEST_INTERVAL -
+            elapsed;
+
+
+        console.log(
+            "DAILY API 대기",
+            waitTime,
+            "ms"
+        );
+
+
+        await sleep(
+            waitTime
+        );
+
+    }
+
+
+    lastDailyRequestTime =
+        Date.now();
+
+
+    // -----------------------------------
+    // 3. Access Token
+    // -----------------------------------
+
     const token =
         await getAccessToken();
 
+
+    // -----------------------------------
+    // 4. 날짜
+    // -----------------------------------
 
     const today =
         new Date()
@@ -244,6 +322,10 @@ async function getDailyPrice(code) {
         .slice(0, 10)
         .replace(/-/g, "");
 
+
+    // -----------------------------------
+    // 5. KIS 일봉 API
+    // -----------------------------------
 
     const url =
         `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`;
@@ -271,7 +353,6 @@ async function getDailyPrice(code) {
                             "FHKST03010100"
 
                     },
-
 
                     params: {
 
@@ -309,6 +390,10 @@ async function getDailyPrice(code) {
         );
 
 
+        // -----------------------------------
+        // 6. 데이터 확인
+        // -----------------------------------
+
         if (
             candles.length > 0
         ) {
@@ -321,13 +406,22 @@ async function getDailyPrice(code) {
         }
 
 
-        // 캐시 저장
-        dailyCache[code] =
-            candles;
+        // -----------------------------------
+        // 7. 성공한 데이터만 캐시
+        // -----------------------------------
+
+        if (
+            candles.length > 0
+        ) {
+
+            dailyCache[code] =
+                candles;
 
 
-        dailyCacheTime[code] =
-            Date.now();
+            dailyCacheTime[code] =
+                Date.now();
+
+        }
 
 
         return candles;
@@ -342,6 +436,22 @@ async function getDailyPrice(code) {
             error.response?.data ||
             error.message
         );
+
+
+        // -----------------------------------
+        // API 호출 제한
+        // -----------------------------------
+
+        if (
+            error.response?.data?.msg_cd ===
+            "EGW00201"
+        ) {
+
+            console.log(
+                "KIS API 호출 제한 발생"
+            );
+
+        }
 
 
         return [];
@@ -415,6 +525,10 @@ async function getMovingAverage(code) {
     }
 
 
+    // -----------------------------------
+    // 종가 추출
+    // -----------------------------------
+
     const prices =
 
         candles
@@ -455,22 +569,45 @@ async function getMovingAverage(code) {
     }
 
 
+    // -----------------------------------
+    // 이동평균 계산
+    // -----------------------------------
+
+    const ma5 =
+        average(
+            prices.slice(0, 5)
+        );
+
+
+    const ma20 =
+        average(
+            prices.slice(0, 20)
+        );
+
+
+    const ma60 =
+        average(
+            prices.slice(0, 60)
+        );
+
+
+    console.log(
+        "MOVING AVERAGE",
+        {
+            ma5,
+            ma20,
+            ma60
+        }
+    );
+
+
     return {
 
-        ma5:
-            average(
-                prices.slice(0, 5)
-            ),
+        ma5,
 
-        ma20:
-            average(
-                prices.slice(0, 20)
-            ),
+        ma20,
 
-        ma60:
-            average(
-                prices.slice(0, 60)
-            )
+        ma60
 
     };
 
