@@ -1,7 +1,7 @@
 // =======================================
 // V12 Ultimate KIS API 연결 모듈
 // 현재가 + 일봉 + 이동평균 계산
-// API 호출 제한 대응 안정화 버전
+// API 호출 제한 대응 최종 안정화 버전
 // =======================================
 
 require("dotenv").config();
@@ -27,16 +27,29 @@ let dailyCacheTime = {};
 const CACHE_TIME =
     5 * 60 * 1000;
 
+
 // =======================================
 // 마지막 성공 데이터 유지
 // =======================================
 
 let lastSuccessfulDailyCache = {};
+
+
 // =======================================
 // 일봉 API 동시 호출 방지
 // =======================================
 
 let dailyRequestPromise = {};
+
+
+// =======================================
+// 일봉 API 마지막 호출 시간
+// =======================================
+
+let lastDailyRequestTime = 0;
+
+const DAILY_REQUEST_INTERVAL =
+    3000;
 
 
 // =======================================
@@ -242,7 +255,7 @@ async function getCurrentPrice(code) {
 async function getDailyPrice(code) {
 
     // -----------------------------------
-    // 1. 기존 캐시 확인
+    // 1. 5분 캐시 확인
     // -----------------------------------
 
     if (
@@ -265,8 +278,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 2. 이미 같은 종목을 조회 중이면
-    // 기존 요청을 기다림
+    // 2. 이미 조회 중이면 기다림
     // -----------------------------------
 
     if (
@@ -286,7 +298,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 3. 새로운 API 요청 시작
+    // 3. 새로운 요청 시작
     // -----------------------------------
 
     dailyRequestPromise[code] =
@@ -320,10 +332,44 @@ async function getDailyPrice(code) {
 async function fetchDailyPrice(code) {
 
     // -----------------------------------
-    // API 호출 전 2초 대기
+    // API 호출 간격 확인
     // -----------------------------------
 
-    await sleep(2000);
+    const now =
+        Date.now();
+
+
+    const elapsed =
+        now -
+        lastDailyRequestTime;
+
+
+    if (
+        elapsed <
+        DAILY_REQUEST_INTERVAL
+    ) {
+
+        const waitTime =
+            DAILY_REQUEST_INTERVAL -
+            elapsed;
+
+
+        console.log(
+            "DAILY API 대기",
+            waitTime,
+            "ms"
+        );
+
+
+        await sleep(
+            waitTime
+        );
+
+    }
+
+
+    lastDailyRequestTime =
+        Date.now();
 
 
     // -----------------------------------
@@ -413,13 +459,14 @@ async function fetchDailyPrice(code) {
 
 
         // -----------------------------------
-        // 성공 데이터 캐시 저장
+        // 성공 데이터 저장
         // -----------------------------------
 
         if (
             candles.length > 0
         ) {
 
+            // 5분 캐시
             dailyCache[code] =
                 candles;
 
@@ -428,10 +475,21 @@ async function fetchDailyPrice(code) {
                 Date.now();
 
 
+            // 마지막 성공 데이터
+            lastSuccessfulDailyCache[code] =
+                candles;
+
+
             console.log(
                 "DAILY CACHE 저장",
                 code,
                 candles.length
+            );
+
+
+            console.log(
+                "LAST SUCCESS DAILY 저장",
+                code
             );
 
         }
@@ -444,16 +502,19 @@ async function fetchDailyPrice(code) {
 
     catch (error) {
 
+        const errorData =
+            error.response?.data ||
+            error.message;
+
+
         console.log(
             "DAILY ERROR",
-            error.response?.data ||
-            error.message
+            errorData
         );
 
 
         // -----------------------------------
-        // 호출 제한 발생
-        // 기존 캐시가 있으면 사용
+        // API 호출 제한
         // -----------------------------------
 
         if (
@@ -465,6 +526,10 @@ async function fetchDailyPrice(code) {
                 "KIS API 호출 제한 발생"
             );
 
+
+            // --------------------------------
+            // 1. 5분 캐시
+            // --------------------------------
 
             if (
                 dailyCache[code] &&
@@ -478,6 +543,27 @@ async function fetchDailyPrice(code) {
 
 
                 return dailyCache[code];
+
+            }
+
+
+            // --------------------------------
+            // 2. 마지막 성공 데이터
+            // --------------------------------
+
+            if (
+                lastSuccessfulDailyCache[code] &&
+                lastSuccessfulDailyCache[code].length > 0
+            ) {
+
+                console.log(
+                    "마지막 성공 DAILY 데이터 사용",
+                    code
+                );
+
+
+                return
+                    lastSuccessfulDailyCache[code];
 
             }
 
