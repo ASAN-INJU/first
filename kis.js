@@ -29,13 +29,10 @@ const CACHE_TIME =
 
 
 // =======================================
-// API 호출 간격 제한
+// 일봉 API 동시 호출 방지
 // =======================================
 
-let lastDailyRequestTime = 0;
-
-const DAILY_REQUEST_INTERVAL =
-    2000;
+let dailyRequestPromise = {};
 
 
 // =======================================
@@ -235,13 +232,13 @@ async function getCurrentPrice(code) {
 
 // =======================================
 // 일봉 데이터 조회
-// API 호출 제한 대응
+// 캐시 + 동시 호출 방지
 // =======================================
 
 async function getDailyPrice(code) {
 
     // -----------------------------------
-    // 1. 캐시 확인
+    // 1. 기존 캐시 확인
     // -----------------------------------
 
     if (
@@ -264,48 +261,69 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 2. API 호출 간격 조절
+    // 2. 이미 같은 종목을 조회 중이면
+    // 기존 요청을 기다림
     // -----------------------------------
 
-    const now =
-        Date.now();
-
-
-    const elapsed =
-        now -
-        lastDailyRequestTime;
-
-
     if (
-        elapsed <
-        DAILY_REQUEST_INTERVAL
+        dailyRequestPromise[code]
     ) {
 
-        const waitTime =
-            DAILY_REQUEST_INTERVAL -
-            elapsed;
-
-
         console.log(
-            "DAILY API 대기",
-            waitTime,
-            "ms"
+            "DAILY REQUEST 대기",
+            code
         );
 
 
-        await sleep(
-            waitTime
-        );
+        return await
+            dailyRequestPromise[code];
 
     }
 
 
-    lastDailyRequestTime =
-        Date.now();
+    // -----------------------------------
+    // 3. 새로운 API 요청 시작
+    // -----------------------------------
+
+    dailyRequestPromise[code] =
+        fetchDailyPrice(code);
+
+
+    try {
+
+        const candles =
+            await dailyRequestPromise[code];
+
+
+        return candles;
+
+    }
+
+    finally {
+
+        delete
+            dailyRequestPromise[code];
+
+    }
+
+}
+
+
+// =======================================
+// 실제 KIS 일봉 API 호출
+// =======================================
+
+async function fetchDailyPrice(code) {
+
+    // -----------------------------------
+    // API 호출 전 2초 대기
+    // -----------------------------------
+
+    await sleep(2000);
 
 
     // -----------------------------------
-    // 3. Access Token
+    // Access Token
     // -----------------------------------
 
     const token =
@@ -313,7 +331,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 4. 날짜
+    // 날짜
     // -----------------------------------
 
     const today =
@@ -324,7 +342,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 5. KIS 일봉 API
+    // KIS 일봉 API
     // -----------------------------------
 
     const url =
@@ -391,23 +409,7 @@ async function getDailyPrice(code) {
 
 
         // -----------------------------------
-        // 6. 데이터 확인
-        // -----------------------------------
-
-        if (
-            candles.length > 0
-        ) {
-
-            console.log(
-                "DAILY FIRST",
-                candles[0]
-            );
-
-        }
-
-
-        // -----------------------------------
-        // 7. 성공한 데이터만 캐시
+        // 성공 데이터 캐시 저장
         // -----------------------------------
 
         if (
@@ -420,6 +422,13 @@ async function getDailyPrice(code) {
 
             dailyCacheTime[code] =
                 Date.now();
+
+
+            console.log(
+                "DAILY CACHE 저장",
+                code,
+                candles.length
+            );
 
         }
 
@@ -439,7 +448,8 @@ async function getDailyPrice(code) {
 
 
         // -----------------------------------
-        // API 호출 제한
+        // 호출 제한 발생
+        // 기존 캐시가 있으면 사용
         // -----------------------------------
 
         if (
@@ -450,6 +460,22 @@ async function getDailyPrice(code) {
             console.log(
                 "KIS API 호출 제한 발생"
             );
+
+
+            if (
+                dailyCache[code] &&
+                dailyCache[code].length > 0
+            ) {
+
+                console.log(
+                    "기존 DAILY CACHE 사용",
+                    code
+                );
+
+
+                return dailyCache[code];
+
+            }
 
         }
 
