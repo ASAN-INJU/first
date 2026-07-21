@@ -34,6 +34,8 @@ function analyzeStock(data) {
 
     let validMA = true;
 
+    let reasons = [];
+
 
     // -----------------------------------
     // MA 데이터 유효성 확인
@@ -60,65 +62,164 @@ function analyzeStock(data) {
 
 
     // -----------------------------------
-    // 1~3. 이동평균 분석
+    // 1. 현재가 vs MA5
     // -----------------------------------
 
     if (validMA) {
 
-        // 현재가 > MA5
         if (
             data.price > data.ma5
         ) {
 
             score += 20;
 
+            reasons.push(
+                "현재가가 MA5 상회 +20"
+            );
+
+        }
+
+        else {
+
+            reasons.push(
+                "현재가가 MA5 하회"
+            );
+
         }
 
 
-        // MA5 > MA20
+        // -----------------------------------
+        // 2. MA5 vs MA20
+        // -----------------------------------
+
         if (
             data.ma5 > data.ma20
         ) {
 
             score += 20;
 
+            reasons.push(
+                "MA5 > MA20 상승추세 +20"
+            );
+
+        }
+
+        else {
+
+            reasons.push(
+                "MA5 < MA20"
+            );
+
         }
 
 
-        // MA20 > MA60
+        // -----------------------------------
+        // 3. MA20 vs MA60
+        // -----------------------------------
+
         if (
             data.ma20 > data.ma60
         ) {
 
             score += 20;
 
+            reasons.push(
+                "MA20 > MA60 상승추세 +20"
+            );
+
+        }
+
+        else {
+
+            reasons.push(
+                "MA20 < MA60"
+            );
+
         }
 
     }
 
 
     // -----------------------------------
-    // 4. 등락률 +2% 이상
+    // 4. 등락률
     // -----------------------------------
 
     if (
-        data.change > 2
+        data.change >= 5
     ) {
 
         score += 20;
+
+        reasons.push(
+            "등락률 강세 +20"
+        );
+
+    }
+
+    else if (
+        data.change > 2
+    ) {
+
+        score += 10;
+
+        reasons.push(
+            "등락률 상승 +10"
+        );
+
+    }
+
+    else if (
+        data.change > 0
+    ) {
+
+        reasons.push(
+            "등락률 상승"
+        );
+
+    }
+
+    else {
+
+        reasons.push(
+            "등락률 약세"
+        );
 
     }
 
 
     // -----------------------------------
-    // 5. 거래량 100만 이상
+    // 5. 거래량
     // -----------------------------------
 
     if (
-        data.volume > 1000000
+        data.volume >= 10000000
     ) {
 
         score += 20;
+
+        reasons.push(
+            "거래량 매우 활발 +20"
+        );
+
+    }
+
+    else if (
+        data.volume >= 1000000
+    ) {
+
+        score += 10;
+
+        reasons.push(
+            "거래량 활발 +10"
+        );
+
+    }
+
+    else {
+
+        reasons.push(
+            "거래량 부족"
+        );
 
     }
 
@@ -206,7 +307,10 @@ function analyzeStock(data) {
                 signal,
 
             validMA:
-                validMA
+                validMA,
+
+            reasons:
+                reasons
 
         }
     );
@@ -221,13 +325,14 @@ function analyzeStock(data) {
             signal,
 
         validMA:
-            validMA
+            validMA,
+
+        reasons:
+            reasons
 
     };
 
 }
-
-
 // =======================================
 // 서버 확인
 // =======================================
