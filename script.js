@@ -413,6 +413,26 @@ function displayStock(
         );
 
 
+    /* ---------------------------------
+       데이터 상태 요소
+    --------------------------------- */
+
+    const priceStatus =
+        document.getElementById(
+            "priceStatus"
+        );
+
+
+    const dailyStatus =
+        document.getElementById(
+            "dailyStatus"
+        );
+
+
+    /* ---------------------------------
+       종목명
+    --------------------------------- */
+
     if (stockName) {
 
         stockName.innerText =
@@ -422,6 +442,10 @@ function displayStock(
 
     }
 
+
+    /* ---------------------------------
+       현재가
+    --------------------------------- */
 
     if (price) {
 
@@ -435,16 +459,28 @@ function displayStock(
     }
 
 
+    /* ---------------------------------
+       등락률
+    --------------------------------- */
+
     if (change) {
 
-        change.innerText =
+        const changeValue =
             Number(
                 data.change || 0
-            ) +
+            );
+
+
+        change.innerText =
+            changeValue +
             "%";
 
     }
 
+
+    /* ---------------------------------
+       거래량
+    --------------------------------- */
 
     if (volume) {
 
@@ -457,37 +493,95 @@ function displayStock(
     }
 
 
+    /* ---------------------------------
+       MA5
+    --------------------------------- */
+
     if (ma5) {
 
         ma5.innerText =
-            data.ma5 ??
-            "-";
+            data.ma5 > 0
+                ? Number(
+                    data.ma5
+                )
+                .toLocaleString()
+                : "-";
 
     }
 
+
+    /* ---------------------------------
+       MA20
+    --------------------------------- */
 
     if (ma20) {
 
         ma20.innerText =
-            data.ma20 ??
-            "-";
+            data.ma20 > 0
+                ? Number(
+                    data.ma20
+                )
+                .toLocaleString()
+                : "-";
 
     }
 
+
+    /* ---------------------------------
+       MA60
+    --------------------------------- */
 
     if (ma60) {
 
         ma60.innerText =
-            data.ma60 ??
-            "-";
+            data.ma60 > 0
+                ? Number(
+                    data.ma60
+                )
+                .toLocaleString()
+                : "-";
 
     }
 
+
+    /* ---------------------------------
+       현재가 상태
+    --------------------------------- */
+
+    if (priceStatus) {
+
+        priceStatus.innerText =
+            data.dataStatus?.price ||
+            "UNKNOWN";
+
+    }
+
+
+    /* ---------------------------------
+       일봉 상태
+    --------------------------------- */
+
+    if (dailyStatus) {
+
+        dailyStatus.innerText =
+            data.dataStatus?.daily ||
+            "UNKNOWN";
+
+    }
+
+
+    /* ---------------------------------
+       AI 분석
+    --------------------------------- */
 
     analyzeStock(
         data
     );
 
+
+    /* ---------------------------------
+       차트
+    --------------------------------- */
 
     drawChart(
         data
@@ -504,28 +598,27 @@ function analyzeStock(
     data
 ) {
 
-    /*
-       서버에서 계산한 AI 분석 결과가 있으면
-       서버 결과를 우선 사용합니다.
-    */
+    /* ---------------------------------
+       서버 AI 분석 결과 사용
+    --------------------------------- */
 
-
-    let score = 50;
+    let score = 0;
 
     let signal =
-        "관망";
+        "데이터부족";
+
+
+    let validMA =
+        false;
 
 
     if (
         data.analysis
-        &&
-        typeof data.analysis.score
-            !== "undefined"
     ) {
 
         score =
             Number(
-                data.analysis.score
+                data.analysis.score || 0
             );
 
 
@@ -533,94 +626,16 @@ function analyzeStock(
             data.analysis.signal ||
             "관망";
 
-    }
 
-    else {
-
-        const change =
-            Number(
-                data.change || 0
-            );
-
-
-        const volume =
-            Number(
-                data.volume || 0
-            );
-
-
-        if (
-            change > 2
-        ) {
-
-            score += 10;
-
-        }
-
-
-        if (
-            change < -3
-        ) {
-
-            score -= 10;
-
-        }
-
-
-        if (
-            volume > 1000000
-        ) {
-
-            score += 10;
-
-        }
-
-
-        if (
-            score > 100
-        ) {
-
-            score = 100;
-
-        }
-
-
-        if (
-            score < 0
-        ) {
-
-            score = 0;
-
-        }
-
-
-        if (
-            score >= 80
-        ) {
-
-            signal =
-                "매수 관심";
-
-        }
-
-        else if (
-            score >= 60
-        ) {
-
-            signal =
-                "상승관찰";
-
-        }
-
-        else {
-
-            signal =
-                "약세";
-
-        }
+        validMA =
+            data.analysis.validMA === true;
 
     }
 
+
+    /* ---------------------------------
+       화면 요소
+    --------------------------------- */
 
     const scoreElement =
         document.getElementById(
@@ -640,6 +655,10 @@ function analyzeStock(
         );
 
 
+    /* ---------------------------------
+       점수
+    --------------------------------- */
+
     if (scoreElement) {
 
         scoreElement.innerText =
@@ -649,6 +668,10 @@ function analyzeStock(
     }
 
 
+    /* ---------------------------------
+       신호
+    --------------------------------- */
+
     if (recommendElement) {
 
         recommendElement.innerText =
@@ -657,13 +680,25 @@ function analyzeStock(
     }
 
 
+    /* ---------------------------------
+       상세 분석
+    --------------------------------- */
+
     if (analysisElement) {
 
-        analysisElement.innerText =
+        if (
+            !validMA
+        ) {
+
+            analysisElement.innerText =
 
 `AI 분석 결과
 
 점수 : ${score}점
+
+현재가 : ${Number(
+    data.price || 0
+).toLocaleString()}원
 
 등락률 : ${Number(
     data.change || 0
@@ -673,15 +708,49 @@ function analyzeStock(
     data.volume || 0
 ).toLocaleString()}
 
-MA5 : ${data.ma5 ?? "-"}
+MA 데이터가 부족합니다.
 
-MA20 : ${data.ma20 ?? "-"}
+현재 단타 분석을 진행할 수 없습니다.`;
 
-MA60 : ${data.ma60 ?? "-"}
+        }
+
+        else {
+
+            analysisElement.innerText =
+
+`AI 분석 결과
+
+점수 : ${score}점
+
+현재가 : ${Number(
+    data.price || 0
+).toLocaleString()}원
+
+등락률 : ${Number(
+    data.change || 0
+)}%
+
+거래량 : ${Number(
+    data.volume || 0
+).toLocaleString()}
+
+MA5 : ${Number(
+    data.ma5
+).toLocaleString()}
+
+MA20 : ${Number(
+    data.ma20
+).toLocaleString()}
+
+MA60 : ${Number(
+    data.ma60
+).toLocaleString()}
 
 판정 : ${signal}
 
 단타 기준 참고용 분석입니다.`;
+
+        }
 
     }
 
@@ -752,7 +821,10 @@ function drawChart(
                 data: {
 
                     labels: [
-                        "현재"
+                        "MA60",
+                        "MA20",
+                        "MA5",
+                        "현재가"
                     ],
 
 
@@ -761,10 +833,25 @@ function drawChart(
                         {
 
                             label:
-                                "현재가",
+                                "주가 / 이동평균",
 
 
                             data: [
+
+                                Number(
+                                    data.ma60 ||
+                                    0
+                                ),
+
+                                Number(
+                                    data.ma20 ||
+                                    0
+                                ),
+
+                                Number(
+                                    data.ma5 ||
+                                    0
+                                ),
 
                                 Number(
                                     data.price ||
@@ -787,7 +874,19 @@ function drawChart(
 
 
                     maintainAspectRatio:
-                        false
+                        false,
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                true
+
+                        }
+
+                    }
 
                 }
 
