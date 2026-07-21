@@ -982,7 +982,283 @@ function displayStock(
     );
 
 }
+/* =====================================
+   자동 단타 후보 스캔
+===================================== */
 
+async function scanStocks() {
+
+    const scanBtn =
+        document.getElementById(
+            "scanBtn"
+        );
+
+    const scanResult =
+        document.getElementById(
+            "scanResult"
+        );
+
+
+    // -----------------------------------
+    // 스캔 시작
+    // -----------------------------------
+
+    if (scanBtn) {
+
+        scanBtn.disabled =
+            true;
+
+        scanBtn.innerText =
+            "🔄 단타 종목 찾는 중...";
+
+    }
+
+
+    if (scanResult) {
+
+        scanResult.innerHTML =
+
+            `<div class="scan-loading">
+                🔍 단타 조건에 맞는 종목을 찾고 있습니다.<br>
+                잠시만 기다려주세요...
+            </div>`;
+
+    }
+
+
+    try {
+
+        console.log(
+            "AUTO SCAN 요청 시작"
+        );
+
+
+        // -----------------------------------
+        // 서버 자동 스캔 요청
+        // -----------------------------------
+
+        const response =
+            await fetch(
+                `${API_SERVER}/api/scan`
+            );
+
+
+        console.log(
+            "AUTO SCAN 응답",
+            response.status
+        );
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                `서버 오류 ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "AUTO SCAN 결과",
+            data
+        );
+
+
+        // -----------------------------------
+        // 결과 확인
+        // -----------------------------------
+
+        if (
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "자동 스캔 실패"
+            );
+
+        }
+
+
+        // -----------------------------------
+        // 후보 없음
+        // -----------------------------------
+
+        if (
+            !data.results ||
+            data.results.length === 0
+        ) {
+
+            if (scanResult) {
+
+                scanResult.innerHTML =
+
+                    `<div class="scan-empty">
+                        오늘 단타 조건에 맞는 종목이 없습니다.
+                    </div>`;
+
+            }
+
+            return;
+
+        }
+
+
+        // -----------------------------------
+        // 후보 화면 출력
+        // -----------------------------------
+
+        if (scanResult) {
+
+            scanResult.innerHTML =
+
+                `<h3>
+                    🔥 오늘의 단타 후보
+                </h3>`;
+
+
+            data.results.forEach(
+                (
+                    stock,
+                    index
+                ) => {
+
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    item.className =
+                        "scan-stock";
+
+
+                    item.innerHTML =
+
+                        `
+                        <div class="scan-rank">
+                            ${index + 1}위
+                        </div>
+
+                        <div class="scan-info">
+
+                            <div class="scan-code">
+                                ${stock.code}
+                            </div>
+
+                            <div class="scan-price">
+                                ${Number(
+                                    stock.price || 0
+                                ).toLocaleString()}원
+                            </div>
+
+                            <div class="scan-change">
+                                ${Number(
+                                    stock.change || 0
+                                )}%
+                            </div>
+
+                        </div>
+
+                        <div class="scan-score">
+
+                            <strong>
+                                ${stock.score}점
+                            </strong>
+
+                            <span>
+                                ${stock.signal}
+                            </span>
+
+                        </div>
+                        `;
+
+
+                    // --------------------------------
+                    // 후보 클릭
+                    // --------------------------------
+
+                    item.addEventListener(
+                        "click",
+                        () => {
+
+                            const input =
+                                document.getElementById(
+                                    "stockCode"
+                                );
+
+
+                            if (input) {
+
+                                input.value =
+                                    stock.code;
+
+                            }
+
+
+                            searchStock();
+
+                        }
+                    );
+
+
+                    scanResult.appendChild(
+                        item
+                    );
+
+                }
+            );
+
+        }
+
+
+    }
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            "AUTO SCAN ERROR",
+            error
+        );
+
+
+        if (scanResult) {
+
+            scanResult.innerHTML =
+
+                `<div class="scan-error">
+                    자동 스캔 중 오류가 발생했습니다.<br>
+                    ${error.message}
+                </div>`;
+
+        }
+
+    }
+
+    finally {
+
+        if (scanBtn) {
+
+            scanBtn.disabled =
+                false;
+
+            scanBtn.innerText =
+                "🔍 오늘의 단타 후보 찾기";
+
+        }
+
+    }
+
+}
 
 /* =====================================
    AI 단타 점수 분석
