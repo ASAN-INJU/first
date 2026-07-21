@@ -20,7 +20,8 @@ app.use(cors());
 app.use(express.json());
 
 
-const PORT = process.env.PORT || 10000;
+const PORT =
+    process.env.PORT || 10000;
 
 
 // =======================================
@@ -225,3 +226,196 @@ function analyzeStock(data) {
     };
 
 }
+
+
+// =======================================
+// 서버 확인
+// =======================================
+
+app.get(
+    "/",
+    (req, res) => {
+
+        res.send(
+            "V12 Ultimate API Server Running"
+        );
+
+    }
+);
+
+
+// =======================================
+// 주가 조회 API
+// =======================================
+
+app.get(
+    "/api/stock/:code",
+    async (req, res) => {
+
+
+        try {
+
+
+            // --------------------------------
+            // 종목 코드
+            // --------------------------------
+
+            const code =
+                req.params.code;
+
+
+            console.log(
+                "STOCK REQUEST",
+                code
+            );
+
+
+            // --------------------------------
+            // 현재가 조회
+            // --------------------------------
+
+            const stock =
+                await getCurrentPrice(
+                    code
+                );
+
+
+            // --------------------------------
+            // 이동평균 조회
+            // --------------------------------
+
+            const ma =
+                await getMovingAverage(
+                    code
+                );
+
+
+            // --------------------------------
+            // AI 분석
+            // --------------------------------
+
+            const analysis =
+                analyzeStock({
+
+                    price:
+                        stock.price,
+
+                    change:
+                        stock.change,
+
+                    volume:
+                        stock.volume,
+
+                    ma5:
+                        ma.ma5,
+
+                    ma20:
+                        ma.ma20,
+
+                    ma60:
+                        ma.ma60
+
+                });
+
+
+            // --------------------------------
+            // 데이터 상태
+            // --------------------------------
+
+            const dataStatus = {
+
+                price:
+                    "LIVE",
+
+                daily:
+                    ma.ma5 > 0 &&
+                    ma.ma20 > 0 &&
+                    ma.ma60 > 0
+                        ? "CACHE_OR_LIVE"
+                        : "UNAVAILABLE"
+
+            };
+
+
+            // --------------------------------
+            // 최종 응답
+            // --------------------------------
+
+            res.json({
+
+                success:
+                    true,
+
+                code:
+                    code,
+
+                price:
+                    stock.price,
+
+                change:
+                    stock.change,
+
+                volume:
+                    stock.volume,
+
+                ma5:
+                    ma.ma5,
+
+                ma20:
+                    ma.ma20,
+
+                ma60:
+                    ma.ma60,
+
+                analysis:
+                    analysis,
+
+                dataStatus:
+                    dataStatus
+
+            });
+
+
+        }
+
+        catch (error) {
+
+
+            console.log(
+                "API ERROR",
+                error.response?.data ||
+                error.message
+            );
+
+
+            res.status(500).json({
+
+                success:
+                    false,
+
+                message:
+                    error.message
+
+            });
+
+
+        }
+
+    }
+);
+
+
+// =======================================
+// 서버 시작
+// =======================================
+
+app.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `V12 Ultimate Server Running ${PORT}`
+        );
+
+    }
+);
