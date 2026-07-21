@@ -169,6 +169,29 @@ async function getAccessToken() {
 
 async function getCurrentPrice(code) {
 
+    // -----------------------------------
+    // 현재가 3초 캐시
+    // -----------------------------------
+
+    if (
+        currentPriceCache[code] &&
+        Date.now() - currentPriceCacheTime[code] <
+        PRICE_CACHE_TIME
+    ) {
+
+        console.log(
+            "CURRENT PRICE CACHE 사용",
+            code,
+            currentPriceCache[code].price
+        );
+
+        return currentPriceCache[code];
+
+    }
+
+
+    const token =
+        await getAccessToken();
     const token =
         await getAccessToken();
 
