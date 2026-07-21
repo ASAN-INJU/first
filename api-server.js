@@ -538,7 +538,242 @@ if (!/^\d{6}$/.test(code)) {
 // =======================================
 // 서버 시작
 // =======================================
+// =======================================
+// 자동 단타 후보 스캔
+// 1차 테스트 버전
+// 최대 10개 종목
+// =======================================
 
+app.get(
+    "/api/scan",
+    async (req, res) => {
+
+        try {
+
+            console.log(
+                "AUTO SCAN START"
+            );
+
+
+            // --------------------------------
+            // 스캔할 종목
+            // 테스트용 10개
+            // --------------------------------
+
+            const codes = [
+
+                "005930", // 삼성전자
+                "000660", // SK하이닉스
+                "035720", // 카카오
+                "035420", // NAVER
+                "005380", // 현대차
+                "000270", // 기아
+                "068270", // 셀트리온
+                "105560", // KB금융
+                "055550", // 신한지주
+                "012330"  // 현대모비스
+
+            ];
+
+
+            const results = [];
+
+
+            // --------------------------------
+            // 종목 순차 조회
+            // API 제한 방지
+            // --------------------------------
+
+            for (
+                const code of codes
+            ) {
+
+                try {
+
+                    console.log(
+                        "SCAN STOCK",
+                        code
+                    );
+
+
+                    // 현재가
+
+                    const stock =
+                        await getCurrentPrice(
+                            code
+                        );
+
+
+                    // 이동평균
+
+                    const ma =
+                        await getMovingAverage(
+                            code
+                        );
+
+
+                    // AI 분석
+
+                    const analysis =
+                        analyzeStock({
+
+                            price:
+                                stock.price,
+
+                            change:
+                                stock.change,
+
+                            volume:
+                                stock.volume,
+
+                            ma5:
+                                ma.ma5,
+
+                            ma20:
+                                ma.ma20,
+
+                            ma60:
+                                ma.ma60
+
+                        });
+
+
+                    // --------------------------------
+                    // 60점 이상만 후보 등록
+                    // --------------------------------
+
+                    if (
+                        analysis.validMA &&
+                        analysis.score >= 60
+                    ) {
+
+                        results.push({
+
+                            code:
+                                code,
+
+                            price:
+                                stock.price,
+
+                            change:
+                                stock.change,
+
+                            volume:
+                                stock.volume,
+
+                            ma5:
+                                ma.ma5,
+
+                            ma20:
+                                ma.ma20,
+
+                            ma60:
+                                ma.ma60,
+
+                            score:
+                                analysis.score,
+
+                            signal:
+                                analysis.signal,
+
+                            reasons:
+                                analysis.reasons
+
+                        });
+
+
+                        console.log(
+                            "SCAN CANDIDATE",
+                            code,
+                            analysis.score,
+                            analysis.signal
+                        );
+
+                    }
+
+                }
+
+                catch (error) {
+
+                    console.log(
+                        "SCAN ERROR",
+                        code,
+                        error.message
+                    );
+
+                }
+
+            }
+
+
+            // --------------------------------
+            // 점수 높은 순 정렬
+            // --------------------------------
+
+            results.sort(
+
+                (
+                    a,
+                    b
+                ) =>
+
+                    b.score -
+                    a.score
+
+            );
+
+
+            console.log(
+                "AUTO SCAN COMPLETE",
+                results.length
+            );
+
+
+            // --------------------------------
+            // 최종 응답
+            // --------------------------------
+
+            res.json({
+
+                success:
+                    true,
+
+                count:
+                    results.length,
+
+                results:
+                    results
+
+            });
+
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "SCAN API ERROR",
+                error.message
+            );
+
+
+            res.status(
+                500
+            )
+            .json({
+
+                success:
+                    false,
+
+                message:
+                    error.message
+
+            });
+
+        }
+
+    }
+);
 app.listen(
     PORT,
     () => {
