@@ -192,8 +192,6 @@ async function getCurrentPrice(code) {
 
     const token =
         await getAccessToken();
-    const token =
-        await getAccessToken();
 
 
     const url =
@@ -248,26 +246,47 @@ async function getCurrentPrice(code) {
         );
 
 
-        return {
+     const result = {
 
-            code,
+    code,
 
-            price:
-                Number(
-                    data?.stck_prpr || 0
-                ),
+    price:
+        Number(
+            data?.stck_prpr || 0
+        ),
 
-            change:
-                Number(
-                    data?.prdy_ctrt || 0
-                ),
+    change:
+        Number(
+            data?.prdy_ctrt || 0
+        ),
 
-            volume:
-                Number(
-                    data?.acml_vol || 0
-                )
+    volume:
+        Number(
+            data?.acml_vol || 0
+        )
 
-        };
+};
+
+
+// -----------------------------------
+// 현재가 캐시 저장
+// -----------------------------------
+
+currentPriceCache[code] =
+    result;
+
+currentPriceCacheTime[code] =
+    Date.now();
+
+
+console.log(
+    "CURRENT PRICE CACHE 저장",
+    code,
+    result.price
+);
+
+
+return result;
 
 
     }
