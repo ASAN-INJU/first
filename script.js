@@ -120,6 +120,11 @@ async function loadStocks() {
    자동완성
 ===================================== */
 
+/* =====================================
+   자동완성
+   종목명 + 종목코드 검색
+===================================== */
+
 function autoComplete() {
 
     const inputElement =
@@ -134,7 +139,10 @@ function autoComplete() {
         );
 
 
-    if (!inputElement || !box) {
+    if (
+        !inputElement ||
+        !box
+    ) {
 
         return;
 
@@ -143,10 +151,12 @@ function autoComplete() {
 
     const input =
         inputElement.value
-        .trim();
+            .trim()
+            .toLowerCase();
 
 
-    box.innerHTML = "";
+    box.innerHTML =
+        "";
 
 
     if (
@@ -160,25 +170,34 @@ function autoComplete() {
 
     const result =
         stocks
-        .filter(
-            stock =>
+            .filter(
+                stock => {
 
-                String(
-                    stock.name || ""
-                )
-                .includes(input)
+                    const name =
+                        String(
+                            stock.name || ""
+                        )
+                        .toLowerCase();
 
-                ||
 
-                String(
-                    stock.code || ""
-                )
-                .includes(input)
-        )
-        .slice(
-            0,
-            10
-        );
+                    const code =
+                        String(
+                            stock.code || ""
+                        )
+                        .toLowerCase();
+
+
+                    return (
+                        name.includes(input) ||
+                        code.includes(input)
+                    );
+
+                }
+            )
+            .slice(
+                0,
+                10
+            );
 
 
     result.forEach(
@@ -206,6 +225,10 @@ function autoComplete() {
                         stock.code;
 
 
+                    inputElement.dataset.stockName =
+                        stock.name;
+
+
                     box.innerHTML =
                         "";
 
@@ -225,6 +248,7 @@ function autoComplete() {
 
 /* =====================================
    주식 조회
+   종목명 + 종목코드 검색 지원
 ===================================== */
 
 async function searchStock() {
@@ -235,7 +259,9 @@ async function searchStock() {
         );
 
 
-    if (!inputElement) {
+    if (
+        !inputElement
+    ) {
 
         alert(
             "종목 입력창을 찾을 수 없습니다."
@@ -246,15 +272,17 @@ async function searchStock() {
     }
 
 
-    const code =
+    let input =
         inputElement.value
-        .trim();
+            .trim();
 
 
-    if (!code) {
+    if (
+        !input
+    ) {
 
         alert(
-            "종목코드를 입력하세요."
+            "종목명 또는 종목코드를 입력하세요."
         );
 
         return;
@@ -262,11 +290,75 @@ async function searchStock() {
     }
 
 
+    // -----------------------------------
+    // 종목명 또는 코드 검색
+    // -----------------------------------
+
+    const stock =
+        stocks.find(
+            item =>
+
+                String(
+                    item.code || ""
+                )
+                .toLowerCase() ===
+                input.toLowerCase()
+
+                ||
+
+                String(
+                    item.name || ""
+                )
+                .toLowerCase() ===
+                input.toLowerCase()
+        );
+
+
+    // -----------------------------------
+    // 종목 검색 성공
+    // -----------------------------------
+
+    let code =
+        input;
+
+
+    let stockName =
+        "";
+
+
+    if (
+        stock
+    ) {
+
+        code =
+            stock.code;
+
+
+        stockName =
+            stock.name;
+
+
+        inputElement.value =
+            code;
+
+
+        inputElement.dataset.stockName =
+            stockName;
+
+    }
+
+
     console.log(
         "주식 조회 시작:",
+        stockName ||
+        "종목명 없음",
         code
     );
 
+
+    // -----------------------------------
+    // API 요청
+    // -----------------------------------
 
     const apiUrl =
         `${API_SERVER}/api/stock/${encodeURIComponent(code)}`;
@@ -284,13 +376,17 @@ async function searchStock() {
             await fetch(
                 apiUrl,
                 {
+
                     method:
                         "GET",
 
                     headers: {
+
                         "Accept":
                             "application/json"
+
                     }
+
                 }
             );
 
@@ -301,7 +397,9 @@ async function searchStock() {
         );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
 
             throw new Error(
                 `서버 응답 오류: ${response.status}`
@@ -334,6 +432,25 @@ async function searchStock() {
         }
 
 
+        // -----------------------------------
+        // 종목명 추가
+        // -----------------------------------
+
+        if (
+            stockName &&
+            !data.name
+        ) {
+
+            data.name =
+                stockName;
+
+        }
+
+
+        // -----------------------------------
+        // 화면 표시
+        // -----------------------------------
+
         displayStock(
             data
         );
@@ -341,7 +458,9 @@ async function searchStock() {
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
 
         console.error(
             "주식 조회 오류:",
@@ -361,58 +480,6 @@ async function searchStock() {
     }
 
 }
-
-
-/* =====================================
-   화면 표시
-===================================== */
-
-function displayStock(
-    data
-) {
-
-    const stockName =
-        document.getElementById(
-            "stockName"
-        );
-
-
-    const price =
-        document.getElementById(
-            "price"
-        );
-
-
-    const change =
-        document.getElementById(
-            "change"
-        );
-
-
-    const volume =
-        document.getElementById(
-            "volume"
-        );
-
-
-    const ma5 =
-        document.getElementById(
-            "ma5"
-        );
-
-
-    const ma20 =
-        document.getElementById(
-            "ma20"
-        );
-
-
-    const ma60 =
-        document.getElementById(
-            "ma60"
-        );
-
-
     /* ---------------------------------
        데이터 상태 요소
     --------------------------------- */
