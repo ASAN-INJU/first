@@ -21,6 +21,8 @@ let stocks = [];
 
 let chart = null;
 
+let isSearching = false;
+
 
 /* =====================================
    페이지 시작
@@ -60,6 +62,24 @@ document.addEventListener(
             stockCode.addEventListener(
                 "input",
                 autoComplete
+            );
+
+
+            stockCode.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+                        searchStock();
+
+                    }
+
+                }
             );
 
         }
@@ -117,8 +137,58 @@ async function loadStocks() {
 
 
 /* =====================================
-   자동완성
+   종목 찾기
+   이름 또는 코드
 ===================================== */
+
+function findStock(input) {
+
+    const keyword =
+        String(
+            input || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+        !keyword
+    ) {
+
+        return null;
+
+    }
+
+
+    return stocks.find(
+        stock => {
+
+            const name =
+                String(
+                    stock.name || ""
+                )
+                .trim()
+                .toLowerCase();
+
+
+            const code =
+                String(
+                    stock.code || ""
+                )
+                .trim()
+                .toLowerCase();
+
+
+            return (
+                name === keyword ||
+                code === keyword
+            );
+
+        }
+    );
+
+}
+
 
 /* =====================================
    자동완성
@@ -188,8 +258,17 @@ function autoComplete() {
 
 
                     return (
-                        name.includes(input) ||
-                        code.includes(input)
+
+                        name.includes(
+                            input
+                        )
+
+                        ||
+
+                        code.includes(
+                            input
+                        )
+
                     );
 
                 }
@@ -222,15 +301,26 @@ function autoComplete() {
                 () => {
 
                     inputElement.value =
-                        stock.code;
+                        stock.name;
 
 
                     inputElement.dataset.stockName =
                         stock.name;
 
 
+                    inputElement.dataset.stockCode =
+                        stock.code;
+
+
                     box.innerHTML =
                         "";
+
+
+                    console.log(
+                        "종목 선택:",
+                        stock.name,
+                        stock.code
+                    );
 
                 }
             );
@@ -248,10 +338,27 @@ function autoComplete() {
 
 /* =====================================
    주식 조회
-   종목명 + 종목코드 검색 지원
+   종목명 + 종목코드 검색
 ===================================== */
 
 async function searchStock() {
+
+    /* ---------------------------------
+       중복 검색 방지
+    --------------------------------- */
+
+    if (
+        isSearching
+    ) {
+
+        console.log(
+            "이미 조회 중입니다."
+        );
+
+        return;
+
+    }
+
 
     const inputElement =
         document.getElementById(
@@ -290,62 +397,172 @@ async function searchStock() {
     }
 
 
-    // -----------------------------------
-    // 종목명 또는 코드 검색
-    // -----------------------------------
+    /* ---------------------------------
+       종목명 또는 코드 검색
+    --------------------------------- */
 
-    const stock =
-        stocks.find(
-            item =>
-
-                String(
-                    item.code || ""
-                )
-                .toLowerCase() ===
-                input.toLowerCase()
-
-                ||
-
-                String(
-                    item.name || ""
-                )
-                .toLowerCase() ===
-                input.toLowerCase()
+    let stock =
+        findStock(
+            input
         );
 
 
-    // -----------------------------------
-    // 종목 검색 성공
-    // -----------------------------------
-
     let code =
-        input;
+        "";
 
 
     let stockName =
         "";
 
 
+    /* ---------------------------------
+       stocks.json에서 종목 찾음
+    --------------------------------- */
+
     if (
         stock
     ) {
 
         code =
-            stock.code;
+            String(
+                stock.code
+            )
+            .trim();
 
 
         stockName =
             stock.name;
 
 
-        inputElement.value =
-            code;
-
-
-        inputElement.dataset.stockName =
-            stockName;
+        console.log(
+            "종목 변환 성공:",
+            stockName,
+            "→",
+            code
+        );
 
     }
+
+
+    /* ---------------------------------
+       자동완성 선택 데이터 사용
+    --------------------------------- */
+
+    else if (
+        inputElement.dataset.stockCode
+    ) {
+
+        code =
+            inputElement.dataset.stockCode;
+
+
+        stockName =
+            inputElement.dataset.stockName ||
+            input;
+
+    }
+
+
+    /* ---------------------------------
+       6자리 숫자 코드 직접 입력
+    --------------------------------- */
+
+    else if (
+        /^\d{6}$/.test(
+            input
+        )
+    ) {
+
+        code =
+            input;
+
+
+        const codeStock =
+            findStock(
+                code
+            );
+
+
+        if (
+            codeStock
+        ) {
+
+            stockName =
+                codeStock.name;
+
+        }
+
+    }
+
+
+    /* ---------------------------------
+       종목을 찾지 못함
+    --------------------------------- */
+
+    else {
+
+        console.log(
+            "INVALID STOCK INPUT",
+            input
+        );
+
+
+        alert(
+
+            "종목을 찾을 수 없습니다.\n\n" +
+
+            "종목명 또는 6자리 종목코드를\n" +
+
+            "정확하게 입력해주세요."
+
+        );
+
+
+        return;
+
+    }
+
+
+    /* ---------------------------------
+       최종 코드 검증
+    --------------------------------- */
+
+    if (
+        !/^\d{6}$/.test(
+            code
+        )
+    ) {
+
+        console.log(
+            "INVALID STOCK CODE",
+            code
+        );
+
+
+        alert(
+            "잘못된 종목코드입니다."
+        );
+
+
+        return;
+
+    }
+
+
+    /* ---------------------------------
+       입력창 표시
+    --------------------------------- */
+
+    inputElement.value =
+        code;
+
+
+    inputElement.dataset.stockCode =
+        code;
+
+
+    inputElement.dataset.stockName =
+        stockName;
 
 
     console.log(
@@ -356,9 +573,9 @@ async function searchStock() {
     );
 
 
-    // -----------------------------------
-    // API 요청
-    // -----------------------------------
+    /* ---------------------------------
+       API 요청
+    --------------------------------- */
 
     const apiUrl =
         `${API_SERVER}/api/stock/${encodeURIComponent(code)}`;
@@ -368,6 +585,10 @@ async function searchStock() {
         "API 요청:",
         apiUrl
     );
+
+
+    isSearching =
+        true;
 
 
     try {
@@ -432,9 +653,9 @@ async function searchStock() {
         }
 
 
-        // -----------------------------------
-        // 종목명 추가
-        // -----------------------------------
+        /* ---------------------------------
+           종목명 추가
+        --------------------------------- */
 
         if (
             stockName &&
@@ -447,9 +668,9 @@ async function searchStock() {
         }
 
 
-        // -----------------------------------
-        // 화면 표시
-        // -----------------------------------
+        /* ---------------------------------
+           화면 표시
+        --------------------------------- */
 
         displayStock(
             data
@@ -469,17 +690,87 @@ async function searchStock() {
 
 
         alert(
+
             "서버 연결 실패\n\n" +
+
             "API 서버:\n" +
+
             API_SERVER +
+
             "\n\n" +
+
             "오류:\n" +
+
             error.message
+
         );
 
     }
 
+    finally {
+
+        isSearching =
+            false;
+
+    }
+
 }
+
+
+/* =====================================
+   주식 데이터 화면 표시
+===================================== */
+
+function displayStock(
+    data
+) {
+
+    /* ---------------------------------
+       화면 요소
+    --------------------------------- */
+
+    const stockNameElement =
+        document.getElementById(
+            "stockName"
+        );
+
+
+    const price =
+        document.getElementById(
+            "price"
+        );
+
+
+    const change =
+        document.getElementById(
+            "change"
+        );
+
+
+    const volume =
+        document.getElementById(
+            "volume"
+        );
+
+
+    const ma5 =
+        document.getElementById(
+            "ma5"
+        );
+
+
+    const ma20 =
+        document.getElementById(
+            "ma20"
+        );
+
+
+    const ma60 =
+        document.getElementById(
+            "ma60"
+        );
+
+
     /* ---------------------------------
        데이터 상태 요소
     --------------------------------- */
@@ -500,9 +791,11 @@ async function searchStock() {
        종목명
     --------------------------------- */
 
-    if (stockName) {
+    if (
+        stockNameElement
+    ) {
 
-        stockName.innerText =
+        stockNameElement.innerText =
             data.name ||
             data.code ||
             "종목";
@@ -514,7 +807,9 @@ async function searchStock() {
        현재가
     --------------------------------- */
 
-    if (price) {
+    if (
+        price
+    ) {
 
         price.innerText =
             Number(
@@ -530,7 +825,9 @@ async function searchStock() {
        등락률
     --------------------------------- */
 
-    if (change) {
+    if (
+        change
+    ) {
 
         const changeValue =
             Number(
@@ -549,7 +846,9 @@ async function searchStock() {
        거래량
     --------------------------------- */
 
-    if (volume) {
+    if (
+        volume
+    ) {
 
         volume.innerText =
             Number(
@@ -564,15 +863,23 @@ async function searchStock() {
        MA5
     --------------------------------- */
 
-    if (ma5) {
+    if (
+        ma5
+    ) {
 
         ma5.innerText =
             data.ma5 > 0
-                ? Number(
+
+                ?
+
+                Number(
                     data.ma5
                 )
                 .toLocaleString()
-                : "-";
+
+                :
+
+                "-";
 
     }
 
@@ -581,15 +888,23 @@ async function searchStock() {
        MA20
     --------------------------------- */
 
-    if (ma20) {
+    if (
+        ma20
+    ) {
 
         ma20.innerText =
             data.ma20 > 0
-                ? Number(
+
+                ?
+
+                Number(
                     data.ma20
                 )
                 .toLocaleString()
-                : "-";
+
+                :
+
+                "-";
 
     }
 
@@ -598,15 +913,23 @@ async function searchStock() {
        MA60
     --------------------------------- */
 
-    if (ma60) {
+    if (
+        ma60
+    ) {
 
         ma60.innerText =
             data.ma60 > 0
-                ? Number(
+
+                ?
+
+                Number(
                     data.ma60
                 )
                 .toLocaleString()
-                : "-";
+
+                :
+
+                "-";
 
     }
 
@@ -615,7 +938,9 @@ async function searchStock() {
        현재가 상태
     --------------------------------- */
 
-    if (priceStatus) {
+    if (
+        priceStatus
+    ) {
 
         priceStatus.innerText =
             data.dataStatus?.price ||
@@ -628,7 +953,9 @@ async function searchStock() {
        일봉 상태
     --------------------------------- */
 
-    if (dailyStatus) {
+    if (
+        dailyStatus
+    ) {
 
         dailyStatus.innerText =
             data.dataStatus?.daily ||
@@ -669,7 +996,9 @@ function analyzeStock(
        서버 AI 분석 결과 사용
     --------------------------------- */
 
-    let score = 0;
+    let score =
+        0;
+
 
     let signal =
         "데이터부족";
@@ -695,7 +1024,8 @@ function analyzeStock(
 
 
         validMA =
-            data.analysis.validMA === true;
+            data.analysis.validMA ===
+            true;
 
     }
 
@@ -726,7 +1056,9 @@ function analyzeStock(
        점수
     --------------------------------- */
 
-    if (scoreElement) {
+    if (
+        scoreElement
+    ) {
 
         scoreElement.innerText =
             score +
@@ -739,7 +1071,9 @@ function analyzeStock(
        신호
     --------------------------------- */
 
-    if (recommendElement) {
+    if (
+        recommendElement
+    ) {
 
         recommendElement.innerText =
             signal;
@@ -751,7 +1085,9 @@ function analyzeStock(
        상세 분석
     --------------------------------- */
 
-    if (analysisElement) {
+    if (
+        analysisElement
+    ) {
 
         if (
             !validMA
@@ -802,15 +1138,15 @@ MA 데이터가 부족합니다.
 ).toLocaleString()}
 
 MA5 : ${Number(
-    data.ma5
+    data.ma5 || 0
 ).toLocaleString()}
 
 MA20 : ${Number(
-    data.ma20
+    data.ma20 || 0
 ).toLocaleString()}
 
 MA60 : ${Number(
-    data.ma60
+    data.ma60 || 0
 ).toLocaleString()}
 
 판정 : ${signal}
@@ -888,10 +1224,15 @@ function drawChart(
                 data: {
 
                     labels: [
+
                         "MA60",
+
                         "MA20",
+
                         "MA5",
+
                         "현재가"
+
                     ],
 
 
