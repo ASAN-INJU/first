@@ -677,104 +677,191 @@ function average(arr) {
 
 async function getMovingAverage(code) {
 
+    try {
 
-    const candles =
-        await getDailyPrice(code);
-
-
-    console.log(
-        "CANDLES LENGTH",
-        candles.length
-    );
+        const candles =
+            await getDailyPrice(code);
 
 
-    // -----------------------------------
-    // 일봉 데이터 없음
-    // -----------------------------------
-
-    if (
-        candles.length === 0
-    ) {
-
-        // 마지막 성공 MA 사용
-
-        if (
-            lastSuccessfulMA[code]
-        ) {
-
-            console.log(
-                "LAST SUCCESS MA 사용",
-                code,
-                lastSuccessfulMA[code]
-            );
-
-
-            return
-                lastSuccessfulMA[code];
-
-        }
-
-
-        return {
-
-            ma5: 0,
-
-            ma20: 0,
-
-            ma60: 0
-
-        };
-
-    }
-
-
-    // -----------------------------------
-    // 종가 추출
-    // -----------------------------------
-
-    const prices =
-
-        candles
-
-        .map(
-            item =>
-                Number(
-                    item.stck_clpr
-                )
-        )
-
-        .filter(
-            price =>
-                price > 0
+        console.log(
+            "CANDLES LENGTH",
+            candles.length
         );
 
 
-    console.log(
-        "PRICE COUNT",
-        prices.length
-    );
-
-
-    // -----------------------------------
-    // 종가 없음
-    // -----------------------------------
-
-    if (
-        prices.length === 0
-    ) {
+        // -----------------------------------
+        // 일봉 데이터 부족
+        // -----------------------------------
 
         if (
-            lastSuccessfulMA[code]
+            !candles ||
+            candles.length === 0
         ) {
 
             console.log(
-                "LAST SUCCESS MA 사용",
+                "MA 데이터 없음",
                 code
             );
 
 
-            return
-                lastSuccessfulMA[code];
+            // 마지막 성공 MA 사용
+
+            if (
+                lastSuccessfulMA[code]
+            ) {
+
+                console.log(
+                    "LAST SUCCESS MA 사용",
+                    code,
+                    lastSuccessfulMA[code]
+                );
+
+
+                return lastSuccessfulMA[code];
+
+            }
+
+
+            return {
+
+                ma5: 0,
+
+                ma20: 0,
+
+                ma60: 0
+
+            };
+
+        }
+
+
+        // -----------------------------------
+        // 종가 추출
+        // -----------------------------------
+
+        const prices = candles
+
+            .map(
+                item =>
+                    Number(
+                        item.stck_clpr
+                    )
+            )
+
+            .filter(
+                price =>
+                    Number.isFinite(price) &&
+                    price > 0
+            );
+
+
+        console.log(
+            "PRICE COUNT",
+            prices.length
+        );
+
+
+        // -----------------------------------
+        // 최근 데이터 확인
+        // -----------------------------------
+
+        console.log(
+            "최근 종가 5개",
+            prices.slice(0, 5)
+        );
+
+
+        // -----------------------------------
+        // MA 계산
+        // -----------------------------------
+
+        const ma5 =
+            prices.length >= 5
+                ? average(
+                    prices.slice(0, 5)
+                )
+                : 0;
+
+
+        const ma20 =
+            prices.length >= 20
+                ? average(
+                    prices.slice(0, 20)
+                )
+                : 0;
+
+
+        const ma60 =
+            prices.length >= 60
+                ? average(
+                    prices.slice(0, 60)
+                )
+                : 0;
+
+
+        const result = {
+
+            ma5,
+
+            ma20,
+
+            ma60
+
+        };
+
+
+        // -----------------------------------
+        // 성공 MA 저장
+        // -----------------------------------
+
+        if (
+            ma5 > 0 ||
+            ma20 > 0 ||
+            ma60 > 0
+        ) {
+
+            lastSuccessfulMA[code] =
+                result;
+
+
+            console.log(
+                "MOVING AVERAGE 성공",
+                code,
+                result
+            );
+
+        }
+
+
+        return result;
+
+
+    }
+
+    catch (error) {
+
+        console.log(
+            "MA ERROR",
+            error.response?.data ||
+            error.message
+        );
+
+
+        // -----------------------------------
+        // 마지막 성공 MA
+        // -----------------------------------
+
+        if (
+            lastSuccessfulMA[code]
+        ) {
+
+            console.log(
+                "오류 발생 → 마지막 성공 MA 사용",
+                code
+            );
+
+
+            return lastSuccessfulMA[code];
 
         }
 
@@ -791,63 +878,8 @@ async function getMovingAverage(code) {
 
     }
 
-
-    // -----------------------------------
-    // 이동평균 계산
-    // -----------------------------------
-
-    const ma5 =
-        average(
-            prices.slice(0, 5)
-        );
-
-
-    const ma20 =
-        average(
-            prices.slice(0, 20)
-        );
-
-
-    const ma60 =
-        average(
-            prices.slice(0, 60)
-        );
-
-
-    const result = {
-
-        ma5,
-
-        ma20,
-
-        ma60
-
-    };
-
-
-    // -----------------------------------
-    // 마지막 성공 MA 저장
-    // -----------------------------------
-
-    lastSuccessfulMA[code] =
-        result;
-
-
-    console.log(
-        "MOVING AVERAGE",
-        result
-    );
-
-
-    console.log(
-        "LAST SUCCESS MA 저장",
-        code
-    );
-
-
-    return result;
-
 }
+
 
 
 // =======================================
