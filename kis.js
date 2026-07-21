@@ -25,7 +25,18 @@ let dailyCache = {};
 let dailyCacheTime = {};
 
 const CACHE_TIME =
-    5 * 60 * 1000;
+    10 * 60 * 1000;
+
+
+// =======================================
+// 현재가 캐시
+// =======================================
+
+let currentPriceCache = {};
+let currentPriceCacheTime = {};
+
+const PRICE_CACHE_TIME =
+    3 * 1000;
 
 
 // =======================================
