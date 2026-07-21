@@ -982,6 +982,8 @@ function displayStock(
     );
 
 }
+
+
 /* =====================================
    자동 단타 후보 스캔
 ===================================== */
@@ -992,6 +994,7 @@ async function scanStocks() {
         document.getElementById(
             "scanBtn"
         );
+
 
     const scanResult =
         document.getElementById(
@@ -1147,18 +1150,21 @@ async function scanStocks() {
                             ${index + 1}위
                         </div>
 
+
                         <div class="scan-info">
 
-                           <div class="scan-code">
-    ${getStockName(stock.code)}
-    (${stock.code})
-</div>
+                            <div class="scan-code">
+                                ${getStockName(stock.code)}
+                                (${stock.code})
+                            </div>
+
 
                             <div class="scan-price">
                                 ${Number(
                                     stock.price || 0
                                 ).toLocaleString()}원
                             </div>
+
 
                             <div class="scan-change">
                                 ${Number(
@@ -1168,11 +1174,13 @@ async function scanStocks() {
 
                         </div>
 
+
                         <div class="scan-score">
 
                             <strong>
                                 ${stock.score}점
                             </strong>
+
 
                             <span>
                                 ${stock.signal}
@@ -1245,6 +1253,7 @@ async function scanStocks() {
 
     }
 
+
     finally {
 
         if (scanBtn) {
@@ -1260,6 +1269,7 @@ async function scanStocks() {
     }
 
 }
+
 
 /* =====================================
    종목 코드 → 종목명 찾기
@@ -1287,323 +1297,5 @@ function getStockName(code) {
 
 
     return code;
-
-}
-/* =====================================
-   AI 단타 점수 분석
-===================================== */
-
-function analyzeStock(
-    data
-) {
-
-    /* ---------------------------------
-       서버 AI 분석 결과 사용
-    --------------------------------- */
-
-    let score =
-        0;
-
-
-    let signal =
-        "데이터부족";
-
-
-    let validMA =
-        false;
-
-
-    if (
-        data.analysis
-    ) {
-
-        score =
-            Number(
-                data.analysis.score || 0
-            );
-
-
-        signal =
-            data.analysis.signal ||
-            "관망";
-
-
-        validMA =
-            data.analysis.validMA ===
-            true;
-
-    }
-
-
-    /* ---------------------------------
-       화면 요소
-    --------------------------------- */
-
-    const scoreElement =
-        document.getElementById(
-            "score"
-        );
-
-
-    const recommendElement =
-        document.getElementById(
-            "recommend"
-        );
-
-
-    const analysisElement =
-        document.getElementById(
-            "analysis"
-        );
-
-
-    /* ---------------------------------
-       점수
-    --------------------------------- */
-
-    if (
-        scoreElement
-    ) {
-
-        scoreElement.innerText =
-            score +
-            "점";
-
-    }
-
-
-    /* ---------------------------------
-       신호
-    --------------------------------- */
-
-    if (
-        recommendElement
-    ) {
-
-        recommendElement.innerText =
-            signal;
-
-    }
-
-
-    /* ---------------------------------
-       상세 분석
-    --------------------------------- */
-
-    if (
-        analysisElement
-    ) {
-
-        if (
-            !validMA
-        ) {
-
-            analysisElement.innerText =
-
-`AI 분석 결과
-
-점수 : ${score}점
-
-현재가 : ${Number(
-    data.price || 0
-).toLocaleString()}원
-
-등락률 : ${Number(
-    data.change || 0
-)}%
-
-거래량 : ${Number(
-    data.volume || 0
-).toLocaleString()}
-
-MA 데이터가 부족합니다.
-
-현재 단타 분석을 진행할 수 없습니다.`;
-
-        }
-
-        else {
-
-            analysisElement.innerText =
-
-`AI 분석 결과
-
-점수 : ${score}점
-
-현재가 : ${Number(
-    data.price || 0
-).toLocaleString()}원
-
-등락률 : ${Number(
-    data.change || 0
-)}%
-
-거래량 : ${Number(
-    data.volume || 0
-).toLocaleString()}
-
-MA5 : ${Number(
-    data.ma5 || 0
-).toLocaleString()}
-
-MA20 : ${Number(
-    data.ma20 || 0
-).toLocaleString()}
-
-MA60 : ${Number(
-    data.ma60 || 0
-).toLocaleString()}
-
-판정 : ${signal}
-
-단타 기준 참고용 분석입니다.`;
-
-        }
-
-    }
-
-}
-
-
-/* =====================================
-   차트
-===================================== */
-
-function drawChart(
-    data
-) {
-
-    const canvas =
-        document.getElementById(
-            "priceChart"
-        );
-
-
-    if (
-        !canvas
-    ) {
-
-        console.log(
-            "priceChart 없음"
-        );
-
-        return;
-
-    }
-
-
-    if (
-        typeof Chart ===
-        "undefined"
-    ) {
-
-        console.error(
-            "Chart.js가 로드되지 않았습니다."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        chart
-    ) {
-
-        chart.destroy();
-
-        chart = null;
-
-    }
-
-
-    chart =
-        new Chart(
-            canvas,
-            {
-
-                type:
-                    "line",
-
-
-                data: {
-
-                    labels: [
-
-                        "MA60",
-
-                        "MA20",
-
-                        "MA5",
-
-                        "현재가"
-
-                    ],
-
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "주가 / 이동평균",
-
-
-                            data: [
-
-                                Number(
-                                    data.ma60 ||
-                                    0
-                                ),
-
-                                Number(
-                                    data.ma20 ||
-                                    0
-                                ),
-
-                                Number(
-                                    data.ma5 ||
-                                    0
-                                ),
-
-                                Number(
-                                    data.price ||
-                                    0
-                                )
-
-                            ]
-
-                        }
-
-                    ]
-
-                },
-
-
-                options: {
-
-                    responsive:
-                        true,
-
-
-                    maintainAspectRatio:
-                        false,
-
-
-                    plugins: {
-
-                        legend: {
-
-                            display:
-                                true
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
 
 }
