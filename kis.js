@@ -29,10 +29,17 @@ const CACHE_TIME =
 
 
 // =======================================
-// 마지막 성공 데이터 유지
+// 마지막 성공 일봉 데이터
 // =======================================
 
 let lastSuccessfulDailyCache = {};
+
+
+// =======================================
+// 마지막 성공 이동평균
+// =======================================
+
+let lastSuccessfulMA = {};
 
 
 // =======================================
@@ -249,13 +256,13 @@ async function getCurrentPrice(code) {
 
 // =======================================
 // 일봉 데이터 조회
-// 캐시 + 동시 호출 방지
 // =======================================
 
 async function getDailyPrice(code) {
 
+
     // -----------------------------------
-    // 1. 5분 캐시 확인
+    // 1. 5분 캐시
     // -----------------------------------
 
     if (
@@ -278,7 +285,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 2. 이미 조회 중이면 기다림
+    // 2. 이미 조회 중이면 대기
     // -----------------------------------
 
     if (
@@ -298,7 +305,7 @@ async function getDailyPrice(code) {
 
 
     // -----------------------------------
-    // 3. 새로운 요청 시작
+    // 3. 새로운 요청
     // -----------------------------------
 
     dailyRequestPromise[code] =
@@ -331,8 +338,9 @@ async function getDailyPrice(code) {
 
 async function fetchDailyPrice(code) {
 
+
     // -----------------------------------
-    // API 호출 간격 확인
+    // API 호출 간격
     // -----------------------------------
 
     const now =
@@ -466,7 +474,6 @@ async function fetchDailyPrice(code) {
             candles.length > 0
         ) {
 
-            // 5분 캐시
             dailyCache[code] =
                 candles;
 
@@ -475,7 +482,6 @@ async function fetchDailyPrice(code) {
                 Date.now();
 
 
-            // 마지막 성공 데이터
             lastSuccessfulDailyCache[code] =
                 candles;
 
@@ -513,9 +519,9 @@ async function fetchDailyPrice(code) {
         );
 
 
-        // -----------------------------------
+        // --------------------------------
         // API 호출 제한
-        // -----------------------------------
+        // --------------------------------
 
         if (
             error.response?.data?.msg_cd ===
@@ -570,6 +576,10 @@ async function fetchDailyPrice(code) {
         }
 
 
+        // --------------------------------
+        // 기타 오류
+        // --------------------------------
+
         return [];
 
     }
@@ -614,6 +624,7 @@ function average(arr) {
 
 async function getMovingAverage(code) {
 
+
     const candles =
         await getDailyPrice(code);
 
@@ -624,9 +635,32 @@ async function getMovingAverage(code) {
     );
 
 
+    // -----------------------------------
+    // 일봉 데이터 없음
+    // -----------------------------------
+
     if (
         candles.length === 0
     ) {
+
+        // 마지막 성공 MA 사용
+
+        if (
+            lastSuccessfulMA[code]
+        ) {
+
+            console.log(
+                "LAST SUCCESS MA 사용",
+                code,
+                lastSuccessfulMA[code]
+            );
+
+
+            return
+                lastSuccessfulMA[code];
+
+        }
+
 
         return {
 
@@ -668,9 +702,29 @@ async function getMovingAverage(code) {
     );
 
 
+    // -----------------------------------
+    // 종가 없음
+    // -----------------------------------
+
     if (
         prices.length === 0
     ) {
+
+        if (
+            lastSuccessfulMA[code]
+        ) {
+
+            console.log(
+                "LAST SUCCESS MA 사용",
+                code
+            );
+
+
+            return
+                lastSuccessfulMA[code];
+
+        }
+
 
         return {
 
@@ -707,17 +761,7 @@ async function getMovingAverage(code) {
         );
 
 
-    console.log(
-        "MOVING AVERAGE",
-        {
-            ma5,
-            ma20,
-            ma60
-        }
-    );
-
-
-    return {
+    const result = {
 
         ma5,
 
@@ -726,6 +770,29 @@ async function getMovingAverage(code) {
         ma60
 
     };
+
+
+    // -----------------------------------
+    // 마지막 성공 MA 저장
+    // -----------------------------------
+
+    lastSuccessfulMA[code] =
+        result;
+
+
+    console.log(
+        "MOVING AVERAGE",
+        result
+    );
+
+
+    console.log(
+        "LAST SUCCESS MA 저장",
+        code
+    );
+
+
+    return result;
 
 }
 
