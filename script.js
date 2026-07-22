@@ -1299,3 +1299,199 @@ function getStockName(code) {
     return code;
 
 }
+/* =====================================
+   AI 단타 분석
+===================================== */
+
+function analyzeStock(data) {
+
+    const scoreElement =
+        document.getElementById("score");
+
+    const recommendElement =
+        document.getElementById("recommend");
+
+
+    if (
+        !scoreElement ||
+        !recommendElement
+    ) {
+
+        return;
+
+    }
+
+
+    /* ---------------------------------
+       데이터 가져오기
+    --------------------------------- */
+
+    const price =
+        Number(data.price || 0);
+
+    const change =
+        Number(data.change || 0);
+
+    const volume =
+        Number(data.volume || 0);
+
+    const ma5 =
+        Number(data.ma5 || 0);
+
+    const ma20 =
+        Number(data.ma20 || 0);
+
+    const ma60 =
+        Number(data.ma60 || 0);
+
+
+    /* ---------------------------------
+       AI 점수
+    --------------------------------- */
+
+    let score = 0;
+
+
+    /* 현재가 > 5일선 */
+
+    if (
+        price > 0 &&
+        ma5 > 0 &&
+        price > ma5
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* 5일선 > 20일선 */
+
+    if (
+        ma5 > 0 &&
+        ma20 > 0 &&
+        ma5 > ma20
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* 20일선 > 60일선 */
+
+    if (
+        ma20 > 0 &&
+        ma60 > 0 &&
+        ma20 > ma60
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* 등락률 상승 */
+
+    if (
+        change > 2
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* 거래량 증가 */
+
+    if (
+        volume > 1000000
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* ---------------------------------
+       신호 판단
+    --------------------------------- */
+
+    let signal = "";
+
+
+    if (
+        score >= 80
+    ) {
+
+        signal =
+            "🔥 강한 매수 관심";
+
+    }
+
+    else if (
+        score >= 60
+    ) {
+
+        signal =
+            "📈 상승 관찰";
+
+    }
+
+    else if (
+        score >= 40
+    ) {
+
+        signal =
+            "👀 관심 종목";
+
+    }
+
+    else if (
+        score >= 20
+    ) {
+
+        signal =
+            "⚠️ 신중 관찰";
+
+    }
+
+    else {
+
+        signal =
+            "⏸️ 관망";
+
+    }
+
+
+    /* ---------------------------------
+       화면 표시
+    --------------------------------- */
+
+    scoreElement.innerText =
+        `${score}점`;
+
+
+    recommendElement.innerText =
+        signal;
+
+
+    /* ---------------------------------
+       콘솔 확인
+    --------------------------------- */
+
+    console.log(
+        "AI 분석 결과",
+        {
+            score,
+            signal,
+            price,
+            change,
+            volume,
+            ma5,
+            ma20,
+            ma60
+        }
+    );
+
+}
