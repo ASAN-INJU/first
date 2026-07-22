@@ -10,7 +10,8 @@ const cors = require("cors");
 
 const {
     getCurrentPrice,
-    getMovingAverage
+    getMovingAverage,
+    getIchimoku
 } = require("./kis");
 
 
@@ -419,7 +420,14 @@ if (!/^\d{6}$/.test(code)) {
                     code
                 );
 
+// --------------------------------
+// 일목균형표 조회
+// --------------------------------
 
+const ichimoku =
+    await getIchimoku(
+        code
+    );
             // --------------------------------
             // AI 분석
             // --------------------------------
@@ -494,11 +502,14 @@ if (!/^\d{6}$/.test(code)) {
                 ma20:
                     ma.ma20,
 
-                ma60:
-                    ma.ma60,
+             ma60:
+    ma.ma60,
 
-                analysis:
-                    analysis,
+ichimoku:
+    ichimoku,
+
+analysis:
+    analysis,
 
                 dataStatus:
                     dataStatus
