@@ -968,6 +968,277 @@ async function getMovingAverage(code) {
 
 
 // =======================================
+// 일목균형표 계산
+// 전환선 9
+// 기준선 26
+// 선행스팬1 26
+// 선행스팬2 52
+// 후행스팬 26
+// =======================================
+
+async function getIchimoku(code) {
+
+    try {
+
+        const candles =
+            await getDailyPrice(code);
+
+
+        if (
+            !candles ||
+            candles.length === 0
+        ) {
+
+            console.log(
+                "ICHIMOKU 데이터 없음",
+                code
+            );
+
+            return {
+
+                conversion: 0,
+
+                base: 0,
+
+                spanA: 0,
+
+                spanB: 0,
+
+                lagging: 0
+
+            };
+
+        }
+
+
+        // ===================================
+        // 고가 / 저가 / 종가 추출
+        // ===================================
+
+        const data =
+
+            candles
+
+                .map(item => ({
+
+                    high:
+                        Number(
+                            item.stck_hgpr
+                        ),
+
+                    low:
+                        Number(
+                            item.stck_lwpr
+                        ),
+
+                    close:
+                        Number(
+                            item.stck_clpr
+                        )
+
+                }))
+
+                .filter(item =>
+
+                    item.high > 0 &&
+
+                    item.low > 0 &&
+
+                    item.close > 0
+
+                );
+
+
+        // ===================================
+        // 기간별 최고가 / 최저가 평균
+        // ===================================
+
+        function highestLowAverage(period) {
+
+            if (
+                data.length < period
+            ) {
+
+                return 0;
+
+            }
+
+
+            const periodData =
+
+                data.slice(
+                    0,
+                    period
+                );
+
+
+            const highs =
+
+                periodData.map(
+                    item => item.high
+                );
+
+
+            const lows =
+
+                periodData.map(
+                    item => item.low
+                );
+
+
+            const highest =
+
+                Math.max(
+                    ...highs
+                );
+
+
+            const lowest =
+
+                Math.min(
+                    ...lows
+                );
+
+
+            return Math.round(
+
+                (
+                    highest +
+                    lowest
+                ) / 2
+
+            );
+
+        }
+
+
+        // ===================================
+        // 전환선
+        // 9일 최고가 + 최저가 / 2
+        // ===================================
+
+        const conversion =
+
+            highestLowAverage(9);
+
+
+        // ===================================
+        // 기준선
+        // 26일 최고가 + 최저가 / 2
+        // ===================================
+
+        const base =
+
+            highestLowAverage(26);
+
+
+        // ===================================
+        // 선행스팬1
+        // 전환선 + 기준선 / 2
+        // ===================================
+
+        const spanA =
+
+            conversion > 0 &&
+            base > 0
+
+                ? Math.round(
+
+                    (
+                        conversion +
+                        base
+                    ) / 2
+
+                )
+
+                : 0;
+
+
+        // ===================================
+        // 선행스팬2
+        // 52일 최고가 + 최저가 / 2
+        // ===================================
+
+        const spanB =
+
+            highestLowAverage(52);
+
+
+        // ===================================
+        // 후행스팬
+        // 현재 종가
+        // ===================================
+
+        const lagging =
+
+            data.length > 0
+
+                ? data[0].close
+
+                : 0;
+
+
+        const result = {
+
+            conversion,
+
+            base,
+
+            spanA,
+
+            spanB,
+
+            lagging
+
+        };
+
+
+        console.log(
+
+            "ICHIMOKU",
+
+            code,
+
+            result
+
+        );
+
+
+        return result;
+
+
+    }
+
+    catch (error) {
+
+        console.log(
+
+            "ICHIMOKU ERROR",
+
+            error.message
+
+        );
+
+
+        return {
+
+            conversion: 0,
+
+            base: 0,
+
+            spanA: 0,
+
+            spanB: 0,
+
+            lagging: 0
+
+        };
+
+    }
+
+}
+
+// =======================================
 // Export
 // =======================================
 
@@ -977,6 +1248,8 @@ module.exports = {
 
     getDailyPrice,
 
-    getMovingAverage
+    getMovingAverage,
+
+    getIchimoku
 
 };
