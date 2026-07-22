@@ -741,8 +741,10 @@ const codes =
                     results.length,
 
                 results:
-                    results
-
+    results.slice(
+        0,
+        10
+    )
             });
 
 
