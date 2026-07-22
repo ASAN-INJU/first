@@ -650,6 +650,10 @@ const codes =
 
                             code:
                                 code,
+name:
+    stocks.find(
+        item => item.code === code
+    )?.name || "",
 
                             price:
                                 stock.price,
