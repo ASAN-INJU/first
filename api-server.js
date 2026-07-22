@@ -7,7 +7,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-
+const stocks = require("./stocks.json");
 const {
     getCurrentPrice,
     getMovingAverage,
