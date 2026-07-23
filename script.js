@@ -187,12 +187,11 @@ function findStock(input) {
         }
     );
 
-}
-
-
+}```javascript
 /* =====================================
    자동완성
    종목명 + 종목코드 검색
+   종목 클릭 → 자동 분석 연결
 ===================================== */
 
 function autoComplete() {
@@ -209,6 +208,7 @@ function autoComplete() {
         );
 
 
+    // 입력창 또는 추천 목록이 없으면 종료
     if (
         !inputElement ||
         !box
@@ -219,16 +219,19 @@ function autoComplete() {
     }
 
 
+    // 입력값 가져오기
     const input =
         inputElement.value
             .trim()
             .toLowerCase();
 
 
+    // 기존 검색 결과 삭제
     box.innerHTML =
         "";
 
 
+    // 입력값이 없으면 종료
     if (
         input.length < 1
     ) {
@@ -238,6 +241,7 @@ function autoComplete() {
     }
 
 
+    // 종목명 또는 종목코드 검색
     const result =
         stocks
             .filter(
@@ -279,6 +283,7 @@ function autoComplete() {
             );
 
 
+    // 검색 결과 표시
     result.forEach(
         stock => {
 
@@ -288,22 +293,31 @@ function autoComplete() {
                 );
 
 
+            // 추천 항목 CSS
             div.className =
                 "suggestion-item";
 
 
+            // 종목명 + 종목코드 표시
             div.innerText =
                 `${stock.name} (${stock.code})`;
 
 
+            // =================================
+            // 종목 클릭
+            // 클릭하면 자동으로 분석 시작
+            // =================================
+
             div.addEventListener(
                 "click",
-                () => {
+                async () => {
 
+                    // 선택한 종목명 표시
                     inputElement.value =
                         stock.name;
 
 
+                    // 선택한 종목 정보 저장
                     inputElement.dataset.stockName =
                         stock.name;
 
@@ -312,6 +326,7 @@ function autoComplete() {
                         stock.code;
 
 
+                    // 검색 목록 닫기
                     box.innerHTML =
                         "";
 
@@ -322,10 +337,18 @@ function autoComplete() {
                         stock.code
                     );
 
+
+                    // =================================
+                    // 선택한 종목 자동 분석
+                    // =================================
+
+                    await searchStock();
+
                 }
             );
 
 
+            // 검색 결과 목록에 추가
             box.appendChild(
                 div
             );
@@ -334,6 +357,9 @@ function autoComplete() {
     );
 
 }
+```
+
+
 
 
 /* =====================================
