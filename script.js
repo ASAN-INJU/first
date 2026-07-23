@@ -955,7 +955,57 @@ const lagging =
                 "-";
 
     }
+/* ---------------------------------
+   일목균형표
+--------------------------------- */
 
+const ichimoku =
+    data.ichimoku || {};
+
+if (conversion) {
+    conversion.innerText =
+        ichimoku.conversion > 0
+            ? Number(
+                ichimoku.conversion
+            ).toLocaleString()
+            : "-";
+}
+
+if (base) {
+    base.innerText =
+        ichimoku.base > 0
+            ? Number(
+                ichimoku.base
+            ).toLocaleString()
+            : "-";
+}
+
+if (spanA) {
+    spanA.innerText =
+        ichimoku.spanA > 0
+            ? Number(
+                ichimoku.spanA
+            ).toLocaleString()
+            : "-";
+}
+
+if (spanB) {
+    spanB.innerText =
+        ichimoku.spanB > 0
+            ? Number(
+                ichimoku.spanB
+            ).toLocaleString()
+            : "-";
+}
+
+if (lagging) {
+    lagging.innerText =
+        ichimoku.lagging > 0
+            ? Number(
+                ichimoku.lagging
+            ).toLocaleString()
+            : "-";
+}
 
     /* ---------------------------------
        현재가 상태
