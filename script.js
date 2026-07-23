@@ -1416,7 +1416,37 @@ function analyzeStock(data) {
 
     const ma60 =
         Number(data.ma60 || 0);
+/* ---------------------------------
+   일목균형표 데이터
+--------------------------------- */
 
+const ichimoku =
+    data.ichimoku || {};
+
+const conversion =
+    Number(
+        ichimoku.conversion || 0
+    );
+
+const base =
+    Number(
+        ichimoku.base || 0
+    );
+
+const spanA =
+    Number(
+        ichimoku.spanA || 0
+    );
+
+const spanB =
+    Number(
+        ichimoku.spanB || 0
+    );
+
+const lagging =
+    Number(
+        ichimoku.lagging || 0
+    );
 
     /* ---------------------------------
        AI 점수
