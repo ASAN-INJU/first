@@ -469,3 +469,35 @@ td {
     }
 
 }
+/* =====================================
+   단타 후보 결과 가운데 정렬
+===================================== */
+
+#autoScanSection {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+#scanBtn {
+    display: block;
+    width: 100%;
+    margin: 0 auto 15px;
+}
+
+#scanResult {
+    width: 100%;
+    margin: 0 auto;
+}
+
+#scanResult h3 {
+    text-align: center;
+}
+
+.scan-stock {
+    width: 100%;
+    margin: 10px auto;
+    box-sizing: border-box;
+}
