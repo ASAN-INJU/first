@@ -5,356 +5,466 @@
 ===================================== */
 
 
+/* =====================================
+   기본 설정
+===================================== */
+
 * {
     box-sizing: border-box;
 }
 
 
+html {
+    width: 100%;
+    min-height: 100%;
+}
+
+
 body {
 
-    margin:0;
+    margin: 0;
 
-    padding:0;
+    padding: 0 12px 60px 12px;
+
+    width: 100%;
+    min-height: 100vh;
 
     font-family:
     "Noto Sans KR",
     Arial,
     sans-serif;
 
-    background:#f3f4f6;
+    background: #f3f4f6;
 
-    color:#111827;
+    color: #111827;
 
 }
 
 
+/* =====================================
+   메인 컨테이너
+===================================== */
 
 .container {
 
-    max-width:480px;
+    width: 100%;
 
-    margin:auto;
+    max-width: 480px;
 
-    padding:20px;
+    margin: 0 auto;
+
+    padding: 20px 0 0 0;
 
 }
 
 
-
-/* 상단 제목 */
+/* =====================================
+   상단 제목
+===================================== */
 
 header {
 
-    text-align:center;
+    width: 100%;
 
-    margin-bottom:20px;
+    text-align: center;
+
+    margin-bottom: 20px;
 
 }
 
 
 header h1 {
 
-    font-size:28px;
+    font-size: 28px;
 
-    margin:0;
+    margin: 0;
 
 }
 
 
 header p {
 
-    margin-top:8px;
+    margin-top: 8px;
 
-    color:#6b7280;
+    color: #6b7280;
 
 }
 
 
-
-/* 검색 영역 */
+/* =====================================
+   검색 영역
+===================================== */
 
 .searchBox {
 
-    background:white;
+    width: 100%;
 
-    padding:15px;
+    background: white;
 
-    border-radius:15px;
+    padding: 15px;
 
-    box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    border-radius: 15px;
+
+    box-shadow:
+    0 3px 10px rgba(0,0,0,0.08);
 
 }
-
 
 
 .searchBox input {
 
-    width:100%;
+    width: 100%;
 
-    padding:14px;
+    padding: 14px;
 
-    font-size:16px;
+    font-size: 16px;
 
-    border:1px solid #ddd;
+    border: 1px solid #ddd;
 
-    border-radius:10px;
+    border-radius: 10px;
 
 }
 
 
-
 .searchBox button {
 
-    width:100%;
+    width: 100%;
 
-    margin-top:10px;
+    margin-top: 10px;
 
-    padding:14px;
+    padding: 14px;
 
-    border:none;
+    border: none;
 
-    border-radius:10px;
+    border-radius: 10px;
 
-    background:#2563eb;
+    background: #2563eb;
 
-    color:white;
+    color: white;
 
-    font-size:16px;
+    font-size: 16px;
 
-    cursor:pointer;
+    cursor: pointer;
 
 }
 
 
 .searchBox button:hover {
 
-    background:#1d4ed8;
+    background: #1d4ed8;
 
 }
 
 
-
-/* 자동완성 */
+/* =====================================
+   자동완성
+===================================== */
 
 #suggestions {
 
-    background:white;
+    width: 100%;
 
-    border-radius:8px;
+    background: white;
 
-    overflow:hidden;
+    border-radius: 8px;
+
+    overflow: hidden;
 
 }
-
 
 
 .suggestion-item {
 
-    padding:10px;
+    padding: 10px;
 
-    border-bottom:1px solid #eee;
+    border-bottom: 1px solid #eee;
 
-    cursor:pointer;
+    cursor: pointer;
 
 }
 
 
 .suggestion-item:hover {
 
-    background:#f1f5f9;
+    background: #f1f5f9;
 
 }
 
 
-
-/* 가격 영역 */
+/* =====================================
+   가격 영역
+===================================== */
 
 .priceArea {
 
-    margin-top:15px;
+    width: 100%;
 
-    background:white;
+    margin-top: 15px;
 
-    padding:20px;
+    background: white;
 
-    border-radius:15px;
+    padding: 20px;
 
-    text-align:center;
+    border-radius: 15px;
+
+    text-align: center;
 
 }
-
 
 
 #stockName {
 
-    margin:0;
+    margin: 0;
 
 }
-
 
 
 .price {
 
-    font-size:34px;
+    font-size: 34px;
 
-    font-weight:bold;
+    font-weight: bold;
 
-    margin:15px;
+    margin: 15px;
 
 }
-
 
 
 .change {
 
-    font-size:18px;
+    font-size: 18px;
 
 }
 
 
-
-/* 점수 */
+/* =====================================
+   점수
+===================================== */
 
 .scoreBox {
 
-    margin-top:15px;
+    width: 100%;
 
-    background:white;
+    margin-top: 15px;
 
-    padding:20px;
+    background: white;
 
-    border-radius:15px;
+    padding: 20px;
 
-    text-align:center;
+    border-radius: 15px;
+
+    text-align: center;
 
 }
-
 
 
 #score {
 
-    font-size:40px;
+    font-size: 40px;
 
-    font-weight:bold;
+    font-weight: bold;
 
-    color:#2563eb;
+    color: #2563eb;
 
 }
-
 
 
 #recommend {
 
-    margin-top:10px;
+    margin-top: 10px;
 
-    font-size:18px;
+    font-size: 18px;
 
 }
 
 
-
-/* 이동평균 */
+/* =====================================
+   이동평균
+===================================== */
 
 .maBox {
 
-    margin-top:15px;
+    width: 100%;
 
-    background:white;
+    margin-top: 15px;
 
-    padding:15px;
+    background: white;
 
-    border-radius:15px;
+    padding: 15px;
+
+    border-radius: 15px;
 
 }
-
 
 
 table {
 
-    width:100%;
+    width: 100%;
 
-    border-collapse:collapse;
-
-}
-
-
-
-th,td {
-
-    padding:12px;
-
-    border-bottom:1px solid #eee;
-
-    text-align:center;
+    border-collapse: collapse;
 
 }
 
 
+th,
+td {
 
-/* 차트 */
+    padding: 12px;
+
+    border-bottom: 1px solid #eee;
+
+    text-align: center;
+
+}
+
+
+/* =====================================
+   차트
+===================================== */
 
 .chartArea {
 
-    margin-top:15px;
+    width: 100%;
 
-    background:white;
+    margin-top: 15px;
 
-    padding:15px;
+    background: white;
 
-    border-radius:15px;
+    padding: 15px;
+
+    border-radius: 15px;
 
 }
 
 
-
-/* 분석 결과 */
+/* =====================================
+   분석 결과
+===================================== */
 
 .messageBox {
 
-    margin-top:15px;
+    width: 100%;
 
-    background:white;
+    margin-top: 15px;
 
-    padding:20px;
+    background: white;
 
-    border-radius:15px;
+    padding: 20px;
+
+    border-radius: 15px;
 
 }
-
 
 
 #analysis {
 
-    line-height:1.6;
+    line-height: 1.6;
 
-    color:#374151;
+    color: #374151;
 
 }
 
 
+/* =====================================
+   모바일 최적화
+===================================== */
 
-/* 모바일 최적화 */
+@media (max-width: 480px) {
 
-@media(max-width:480px){
+    body {
+
+        padding-left: 10px;
+
+        padding-right: 10px;
+
+        padding-bottom: 70px;
+
+    }
 
 
     .container {
 
-        padding:12px;
+        width: 100%;
+
+        max-width: 100%;
+
+        padding-top: 15px;
 
     }
 
 
     header h1 {
 
-        font-size:24px;
+        font-size: 24px;
+
+    }
+
+
+    header p {
+
+        font-size: 14px;
 
     }
 
 
     .price {
 
-        font-size:30px;
+        font-size: 30px;
+
+    }
+
+
+    .searchBox,
+    .priceArea,
+    .scoreBox,
+    .maBox,
+    .chartArea,
+    .messageBox {
+
+        width: 100%;
+
+    }
+
+}
+
+
+/* =====================================
+   아주 작은 휴대폰
+===================================== */
+
+@media (max-width: 360px) {
+
+    body {
+
+        padding-left: 8px;
+
+        padding-right: 8px;
+
+        padding-bottom: 70px;
+
+    }
+
+
+    header h1 {
+
+        font-size: 22px;
+
+    }
+
+
+    .price {
+
+        font-size: 27px;
+
+    }
+
+
+    th,
+    td {
+
+        padding: 8px 4px;
+
+        font-size: 14px;
 
     }
 
