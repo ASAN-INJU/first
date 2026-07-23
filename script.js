@@ -769,7 +769,30 @@ function displayStock(
         document.getElementById(
             "ma60"
         );
+const conversion =
+    document.getElementById(
+        "conversion"
+    );
 
+const base =
+    document.getElementById(
+        "base"
+    );
+
+const spanA =
+    document.getElementById(
+        "spanA"
+    );
+
+const spanB =
+    document.getElementById(
+        "spanB"
+    );
+
+const lagging =
+    document.getElementById(
+        "lagging"
+    );
 
     /* ---------------------------------
        데이터 상태 요소
