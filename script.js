@@ -1084,10 +1084,15 @@ if (lagging) {
 
 
 /* =====================================
+```javascript
+/* =====================================
    자동 단타 후보 스캔
+   가격대 선택 지원
 ===================================== */
 
-async function scanStocks() {
+async function scanStocks(
+    maxPrice = 50000
+) {
 
     const scanBtn =
         document.getElementById(
@@ -1102,6 +1107,16 @@ async function scanStocks() {
 
 
     // -----------------------------------
+    // 가격대 이름
+    // -----------------------------------
+
+    let priceLabel =
+        `${Number(
+            maxPrice
+        ).toLocaleString()}원 이하`;
+
+
+    // -----------------------------------
     // 스캔 시작
     // -----------------------------------
 
@@ -1111,7 +1126,7 @@ async function scanStocks() {
             true;
 
         scanBtn.innerText =
-            "🔄 단타 종목 찾는 중...";
+            `🔄 ${priceLabel} 종목 찾는 중...`;
 
     }
 
@@ -1121,7 +1136,7 @@ async function scanStocks() {
         scanResult.innerHTML =
 
             `<div class="scan-loading">
-                🔍 단타 조건에 맞는 종목을 찾고 있습니다.<br>
+                🔍 ${priceLabel} 단타 종목을 찾고 있습니다.<br>
                 잠시만 기다려주세요...
             </div>`;
 
@@ -1131,17 +1146,21 @@ async function scanStocks() {
     try {
 
         console.log(
-            "AUTO SCAN 요청 시작"
+            "AUTO SCAN 요청 시작",
+            {
+                maxPrice
+            }
         );
 
 
         // -----------------------------------
         // 서버 자동 스캔 요청
+        // 가격 조건 전달
         // -----------------------------------
 
         const response =
             await fetch(
-                `${API_SERVER}/api/scan`
+                `${API_SERVER}/api/scan?maxPrice=${maxPrice}`
             );
 
 
@@ -1202,7 +1221,8 @@ async function scanStocks() {
                 scanResult.innerHTML =
 
                     `<div class="scan-empty">
-                        오늘 단타 조건에 맞는 종목이 없습니다.
+                        ${priceLabel} 조건에 맞는
+                        오늘의 단타 종목이 없습니다.
                     </div>`;
 
             }
@@ -1213,7 +1233,54 @@ async function scanStocks() {
 
 
         // -----------------------------------
-        // 후보 화면 출력
+        // 프론트 최종 가격 필터
+        // -----------------------------------
+
+        const filteredResults =
+            data.results.filter(
+                stock => {
+
+                    const price =
+                        Number(
+                            stock.price || 0
+                        );
+
+
+                    return (
+                        price > 0 &&
+                        price <= maxPrice
+                    );
+
+                }
+            );
+
+
+        // -----------------------------------
+        // 최종 후보 없음
+        // -----------------------------------
+
+        if (
+            filteredResults.length === 0
+        ) {
+
+            if (scanResult) {
+
+                scanResult.innerHTML =
+
+                    `<div class="scan-empty">
+                        ${priceLabel} 조건에 맞는
+                        단타 후보가 없습니다.
+                    </div>`;
+
+            }
+
+            return;
+
+        }
+
+
+        // -----------------------------------
+        // 결과 화면 출력
         // -----------------------------------
 
         if (scanResult) {
@@ -1221,11 +1288,11 @@ async function scanStocks() {
             scanResult.innerHTML =
 
                 `<h3>
-                    🔥 오늘의 단타 후보
+                    🔥 ${priceLabel} 오늘의 단타 후보
                 </h3>`;
 
 
-            data.results.forEach(
+            filteredResults.forEach(
                 (
                     stock,
                     index
@@ -1252,10 +1319,14 @@ async function scanStocks() {
 
                         <div class="scan-info">
 
-                           <div class="scan-code">
-    ${stock.name || getStockName(stock.code)}
-    (${stock.code})
-</div>
+                            <div class="scan-code">
+                                ${stock.name ||
+                                getStockName(
+                                    stock.code
+                                )}
+                                (${stock.code})
+                            </div>
+
 
                             <div class="scan-price">
                                 ${Number(
@@ -1290,6 +1361,7 @@ async function scanStocks() {
 
                     // --------------------------------
                     // 후보 클릭
+                    // 클릭하면 자동 분석
                     // --------------------------------
 
                     item.addEventListener(
@@ -1307,9 +1379,15 @@ async function scanStocks() {
                                 input.value =
                                     stock.code;
 
+
+                                // 종목 코드 저장
+                                input.dataset.stockCode =
+                                    stock.code;
+
                             }
 
 
+                            // 선택 종목 자동 분석
                             searchStock();
 
                         }
@@ -1373,7 +1451,9 @@ async function scanStocks() {
    종목 코드 → 종목명 찾기
 ===================================== */
 
-function getStockName(code) {
+function getStockName(
+    code
+) {
 
     const stock =
         stocks.find(
@@ -1397,321 +1477,4 @@ function getStockName(code) {
     return code;
 
 }
-/* =====================================
-   AI 단타 분석
-===================================== */
-
-function analyzeStock(data) {
-
-    const scoreElement =
-        document.getElementById("score");
-
-    const recommendElement =
-        document.getElementById("recommend");
-
-
-    if (
-        !scoreElement ||
-        !recommendElement
-    ) {
-
-        return;
-
-    }
-
-
-    /* ---------------------------------
-       데이터 가져오기
-    --------------------------------- */
-
-    const price =
-        Number(data.price || 0);
-
-    const change =
-        Number(data.change || 0);
-
-    const volume =
-        Number(data.volume || 0);
-
-    const ma5 =
-        Number(data.ma5 || 0);
-
-    const ma20 =
-        Number(data.ma20 || 0);
-
-    const ma60 =
-        Number(data.ma60 || 0);
-/* ---------------------------------
-   일목균형표 데이터
---------------------------------- */
-
-const ichimoku =
-    data.ichimoku || {};
-
-const conversion =
-    Number(
-        ichimoku.conversion || 0
-    );
-
-const base =
-    Number(
-        ichimoku.base || 0
-    );
-
-const spanA =
-    Number(
-        ichimoku.spanA || 0
-    );
-
-const spanB =
-    Number(
-        ichimoku.spanB || 0
-    );
-
-const lagging =
-    Number(
-        ichimoku.lagging || 0
-    );
-
-    /* ---------------------------------
-       AI 점수
-    --------------------------------- */
-
-    let score = 0;
-
-
-    /* 현재가 > 5일선 */
-
-    if (
-        price > 0 &&
-        ma5 > 0 &&
-        price > ma5
-    ) {
-
-        score += 20;
-
-    }
-
-
-    /* 5일선 > 20일선 */
-
-    if (
-        ma5 > 0 &&
-        ma20 > 0 &&
-        ma5 > ma20
-    ) {
-
-        score += 20;
-
-    }
-
-
-    /* 20일선 > 60일선 */
-
-    if (
-        ma20 > 0 &&
-        ma60 > 0 &&
-        ma20 > ma60
-    ) {
-
-        score += 20;
-
-    }
-
-
-    /* 등락률 상승 */
-
-    if (
-        change > 2
-    ) {
-
-        score += 20;
-
-    }
-
-
-    /* 거래량 증가 */
-
-    if (
-        volume > 1000000
-    ) {
-
-        score += 20;
-
-    }
-/* ---------------------------------
-   일목균형표 분석
---------------------------------- */
-
-let ichimokuSignal =
-    "일목균형표 데이터 없음";
-
-
-if (
-    conversion > 0 &&
-    base > 0 &&
-    spanA > 0 &&
-    spanB > 0
-) {
-
-    if (
-        price > conversion &&
-        price > base &&
-        conversion > base &&
-        spanA > spanB
-    ) {
-
-        ichimokuSignal =
-            "☁️ 일목균형표 강세";
-
-    }
-
-    else if (
-        price > conversion &&
-        price > base
-    ) {
-
-        ichimokuSignal =
-            "📈 일목균형표 상승";
-
-    }
-
-    else if (
-        price < conversion &&
-        price < base
-    ) {
-
-        ichimokuSignal =
-            "📉 일목균형표 약세";
-
-    }
-
-    else {
-
-        ichimokuSignal =
-            "⏸️ 일목균형표 중립";
-
-    }
-
-}
-
-    /* ---------------------------------
-       신호 판단
-    --------------------------------- */
-
-    let signal = "";
-
-
-    if (
-        score >= 80
-    ) {
-
-        signal =
-            "🔥 강한 매수 관심";
-
-    }
-
-    else if (
-        score >= 60
-    ) {
-
-        signal =
-            "📈 상승 관찰";
-
-    }
-
-    else if (
-        score >= 40
-    ) {
-
-        signal =
-            "👀 관심 종목";
-
-    }
-
-    else if (
-        score >= 20
-    ) {
-
-        signal =
-            "⚠️ 신중 관찰";
-
-    }
-
-    else {
-
-        signal =
-            "⏸️ 관망";
-
-    }
-
-/* ---------------------------------
-   일목균형표 최종 판단
---------------------------------- */
-
-let finalSignal =
-    signal;
-
-
-/* 강한 매수 조건 */
-
-if (
-    score >= 80 &&
-    ichimokuSignal ===
-        "☁️ 일목균형표 강세"
-) {
-
-    finalSignal =
-        "🔥 강한 매수 관심 + 일목 강세";
-
-}
-
-
-/* 상승 관찰 조건 */
-
-else if (
-    score >= 60 &&
-    (
-        ichimokuSignal ===
-            "☁️ 일목균형표 강세" ||
-
-        ichimokuSignal ===
-            "📈 일목균형표 상승"
-    )
-) {
-
-    finalSignal =
-        "📈 상승 관찰 + 일목 상승";
-
-}
-    /* ---------------------------------
-       화면 표시
-    --------------------------------- */
-
-    scoreElement.innerText =
-        `${score}점`;
-
-
-    recommendElement.innerText =
-       finalSignal;
-
-
-    /* ---------------------------------
-       콘솔 확인
-    --------------------------------- */
-
-    console.log(
-        "AI 분석 결과",
-        {
-            score,
-            signal,
-            price,
-            change,
-            volume,
-            ma5,
-            ma20,
-            ma60
-        }
-    );
-
-}
+```
