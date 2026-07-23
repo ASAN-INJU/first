@@ -1514,7 +1514,61 @@ const lagging =
         score += 20;
 
     }
+/* ---------------------------------
+   일목균형표 분석
+--------------------------------- */
 
+let ichimokuSignal =
+    "일목균형표 데이터 없음";
+
+
+if (
+    conversion > 0 &&
+    base > 0 &&
+    spanA > 0 &&
+    spanB > 0
+) {
+
+    if (
+        price > conversion &&
+        price > base &&
+        conversion > base &&
+        spanA > spanB
+    ) {
+
+        ichimokuSignal =
+            "☁️ 일목균형표 강세";
+
+    }
+
+    else if (
+        price > conversion &&
+        price > base
+    ) {
+
+        ichimokuSignal =
+            "📈 일목균형표 상승";
+
+    }
+
+    else if (
+        price < conversion &&
+        price < base
+    ) {
+
+        ichimokuSignal =
+            "📉 일목균형표 약세";
+
+    }
+
+    else {
+
+        ichimokuSignal =
+            "⏸️ 일목균형표 중립";
+
+    }
+
+}
 
     /* ---------------------------------
        신호 판단
