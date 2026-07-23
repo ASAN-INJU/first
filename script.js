@@ -1226,11 +1226,10 @@ async function scanStocks() {
 
                         <div class="scan-info">
 
-                            <div class="scan-code">
-                                ${getStockName(stock.code)}
-                                (${stock.code})
-                            </div>
-
+                           <div class="scan-code">
+    ${stock.name || getStockName(stock.code)}
+    (${stock.code})
+</div>
 
                             <div class="scan-price">
                                 ${Number(
