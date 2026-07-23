@@ -667,9 +667,7 @@ async function fetchDailyPrice(code) {
                     );
 
 
-                    return
-                        lastSuccessfulDailyCache[code];
-
+                   return lastSuccessfulDailyCache[code];
                 }
 
 
