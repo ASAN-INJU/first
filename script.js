@@ -1668,7 +1668,7 @@ else if (
 
 
     recommendElement.innerText =
-        signal;
+       finalSignal;
 
 
     /* ---------------------------------
