@@ -887,28 +887,35 @@ async function getMovingAverage(code) {
                 )
                 : 0;
 
+const ma120 =
+    prices.length >= 120
+        ? average(
+            prices.slice(0, 120)
+        )
+        : 0;
+const result = {
 
-        const result = {
+    ma5,
 
-            ma5,
+    ma20,
 
-            ma20,
+    ma60,
 
-            ma60
+    ma120
 
-        };
+};
 
 
         // -----------------------------------
         // 성공 MA 저장
         // -----------------------------------
 
-        if (
-            ma5 > 0 ||
-            ma20 > 0 ||
-            ma60 > 0
-        ) {
-
+       if (
+    ma5 > 0 ||
+    ma20 > 0 ||
+    ma60 > 0 ||
+    ma120 > 0
+)
             lastSuccessfulMA[code] =
                 result;
 
@@ -955,20 +962,15 @@ async function getMovingAverage(code) {
         }
 
 
-        return {
+      return {
 
-            ma5: 0,
+    ma5: 0,
 
-            ma20: 0,
+    ma20: 0,
 
-            ma60: 0
+    ma60: 0
 
-        };
-
-    }
-
-}
-
+};
 
 
 // =======================================
