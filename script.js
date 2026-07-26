@@ -795,6 +795,10 @@ function displayStock(
         document.getElementById(
             "ma60"
         );
+   const ma120 =
+    document.getElementById(
+        "ma120"
+    );
 const conversion =
     document.getElementById(
         "conversion"
@@ -981,6 +985,30 @@ const lagging =
                 "-";
 
     }
+
+   /* ---------------------------------
+   MA120
+--------------------------------- */
+
+if (
+    ma120
+) {
+
+    ma120.innerText =
+        data.ma120 > 0
+
+            ?
+
+            Number(
+                data.ma120
+            )
+            .toLocaleString()
+
+            :
+
+            "-";
+
+}
 /* ---------------------------------
    일목균형표
 --------------------------------- */
