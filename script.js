@@ -1928,14 +1928,20 @@ try {
                     <div class="scan-info">
 
                         <div class="scan-code">
-                            ${
-                                stock.name ||
-                                getStockName(
-                                    stock.code
-                                )
-                            }
-                            (${stock.code})
-                        </div>
+
+    <div class="scan-stock-name">
+        ${stock.name ||
+        getStockName(
+            stock.code
+        ) ||
+        "종목명 없음"}
+    </div>
+
+    <div class="scan-stock-code">
+        ${stock.code}
+    </div>
+
+</div>
 
 
                         <div class="scan-price">
