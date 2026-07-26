@@ -811,13 +811,15 @@ async function getMovingAverage(code) {
 
             return {
 
-                ma5: 0,
+    ma5: 0,
 
-                ma20: 0,
+    ma20: 0,
 
-                ma60: 0
+    ma60: 0,
 
-            };
+    ma120: 0
+
+};
 
         }
 
