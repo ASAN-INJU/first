@@ -1,6 +1,10 @@
+```js
 // =======================================
 // V12 Ultimate API Server
-// KIS + AI 단타 분석 버전
+// KIS + AI 단타 분석
+// MA5 + MA20 + MA60 + MA120
+// 일목균형표
+// 자동 단타 후보 스캔
 // =======================================
 
 require("dotenv").config();
@@ -8,6 +12,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const stocks = require("./stocks.json");
+
 const {
     getCurrentPrice,
     getMovingAverage,
@@ -40,6 +45,8 @@ function analyzeStock(data) {
 
     // -----------------------------------
     // MA 데이터 유효성 확인
+    // MA120은 현재 분석 필수 조건에서 제외
+    // 기존 V12 점수 체계 유지
     // -----------------------------------
 
     if (
@@ -53,9 +60,17 @@ function analyzeStock(data) {
         console.log(
             "MA DATA INVALID",
             {
-                ma5: data.ma5,
-                ma20: data.ma20,
-                ma60: data.ma60
+                ma5:
+                    data.ma5,
+
+                ma20:
+                    data.ma20,
+
+                ma60:
+                    data.ma60,
+
+                ma120:
+                    data.ma120
             }
         );
 
@@ -63,13 +78,33 @@ function analyzeStock(data) {
 
 
     // -----------------------------------
-    // 1. 현재가 vs MA5
+    // MA120 상태 로그
     // -----------------------------------
+
+    if (
+        !data.ma120
+    ) {
+
+        console.log(
+            "MA120 DATA UNAVAILABLE",
+            {
+                ma120:
+                    data.ma120
+            }
+        );
+
+    }
+
+
+    // ===================================
+    // 1. 현재가 vs MA5
+    // ===================================
 
     if (validMA) {
 
         if (
-            data.price > data.ma5
+            data.price >
+            data.ma5
         ) {
 
             score += 20;
@@ -94,7 +129,8 @@ function analyzeStock(data) {
         // -----------------------------------
 
         if (
-            data.ma5 > data.ma20
+            data.ma5 >
+            data.ma20
         ) {
 
             score += 20;
@@ -119,7 +155,8 @@ function analyzeStock(data) {
         // -----------------------------------
 
         if (
-            data.ma20 > data.ma60
+            data.ma20 >
+            data.ma60
         ) {
 
             score += 20;
@@ -141,9 +178,9 @@ function analyzeStock(data) {
     }
 
 
-    // -----------------------------------
+    // ===================================
     // 4. 등락률
-    // -----------------------------------
+    // ===================================
 
     if (
         data.change >= 5
@@ -188,9 +225,9 @@ function analyzeStock(data) {
     }
 
 
-    // -----------------------------------
+    // ===================================
     // 5. 거래량
-    // -----------------------------------
+    // ===================================
 
     if (
         data.volume >= 10000000
@@ -229,7 +266,8 @@ function analyzeStock(data) {
     // 신호 판단
     // ===================================
 
-    let signal = "관망";
+    let signal =
+        "관망";
 
 
     if (
@@ -283,6 +321,7 @@ function analyzeStock(data) {
     console.log(
         "AI ANALYSIS",
         {
+
             price:
                 data.price,
 
@@ -294,6 +333,9 @@ function analyzeStock(data) {
 
             ma60:
                 data.ma60,
+
+            ma120:
+                data.ma120,
 
             change:
                 data.change,
@@ -334,6 +376,8 @@ function analyzeStock(data) {
     };
 
 }
+
+
 // =======================================
 // 서버 확인
 // =======================================
@@ -358,48 +402,51 @@ app.get(
     "/api/stock/:code",
     async (req, res) => {
 
-
         try {
-
 
             // --------------------------------
             // 종목 코드
             // --------------------------------
 
-           const code =
-    req.params.code.trim();
-
-console.log(
-    "STOCK REQUEST",
-    code
-);
+            const code =
+                req.params.code.trim();
 
 
-// --------------------------------
-// 종목코드 유효성 검사
-// --------------------------------
+            console.log(
+                "STOCK REQUEST",
+                code
+            );
 
-if (!/^\d{6}$/.test(code)) {
 
-    console.log(
-        "INVALID STOCK CODE",
-        code
-    );
+            // --------------------------------
+            // 종목코드 유효성 검사
+            // --------------------------------
 
-    return res.status(400).json({
+            if (
+                !/^\d{6}$/.test(code)
+            ) {
 
-        success:
-            false,
+                console.log(
+                    "INVALID STOCK CODE",
+                    code
+                );
 
-        message:
-            "종목코드는 6자리 숫자를 입력해주세요.",
 
-        code:
-            code
+                return res.status(400).json({
 
-    });
+                    success:
+                        false,
 
-}
+                    message:
+                        "종목코드는 6자리 숫자를 입력해주세요.",
+
+                    code:
+                        code
+
+                });
+
+            }
+
 
             // --------------------------------
             // 현재가 조회
@@ -413,6 +460,7 @@ if (!/^\d{6}$/.test(code)) {
 
             // --------------------------------
             // 이동평균 조회
+            // MA5 + MA20 + MA60 + MA120
             // --------------------------------
 
             const ma =
@@ -420,14 +468,17 @@ if (!/^\d{6}$/.test(code)) {
                     code
                 );
 
-// --------------------------------
-// 일목균형표 조회
-// --------------------------------
 
-const ichimoku =
-    await getIchimoku(
-        code
-    );
+            // --------------------------------
+            // 일목균형표 조회
+            // --------------------------------
+
+            const ichimoku =
+                await getIchimoku(
+                    code
+                );
+
+
             // --------------------------------
             // AI 분석
             // --------------------------------
@@ -451,7 +502,10 @@ const ichimoku =
                         ma.ma20,
 
                     ma60:
-                        ma.ma60
+                        ma.ma60,
+
+                    ma120:
+                        ma.ma120
 
                 });
 
@@ -470,6 +524,11 @@ const ichimoku =
                     ma.ma20 > 0 &&
                     ma.ma60 > 0
                         ? "CACHE_OR_LIVE"
+                        : "UNAVAILABLE",
+
+                ma120:
+                    ma.ma120 > 0
+                        ? "AVAILABLE"
                         : "UNAVAILABLE"
 
             };
@@ -496,20 +555,43 @@ const ichimoku =
                 volume:
                     stock.volume,
 
+
+                // =================================
+                // 이동평균
+                // =================================
+
                 ma5:
                     ma.ma5,
 
                 ma20:
                     ma.ma20,
 
-             ma60:
-    ma.ma60,
+                ma60:
+                    ma.ma60,
 
-ichimoku:
-    ichimoku,
+                ma120:
+                    ma.ma120,
 
-analysis:
-    analysis,
+
+                // =================================
+                // 일목균형표
+                // =================================
+
+                ichimoku:
+                    ichimoku,
+
+
+                // =================================
+                // AI 분석
+                // =================================
+
+                analysis:
+                    analysis,
+
+
+                // =================================
+                // 데이터 상태
+                // =================================
 
                 dataStatus:
                     dataStatus
@@ -520,7 +602,6 @@ analysis:
         }
 
         catch (error) {
-
 
             console.log(
                 "API ERROR",
@@ -539,7 +620,6 @@ analysis:
 
             });
 
-
         }
 
     }
@@ -547,12 +627,13 @@ analysis:
 
 
 // =======================================
-// 서버 시작
-// =======================================
-// =======================================
 // 자동 단타 후보 스캔
-// 1차 테스트 버전
-// 최대 10개 종목
+// =======================================
+// stocks.json 전체 종목
+// 종목별 순차 조회
+// API 호출 제한 방지
+// 점수순 정렬
+// TOP 10 반환
 // =======================================
 
 app.get(
@@ -566,14 +647,16 @@ app.get(
             );
 
 
-           // --------------------------------
-// stocks.json 전체 종목 사용
-// --------------------------------
+            // --------------------------------
+            // stocks.json 전체 종목 사용
+            // --------------------------------
 
-const codes =
-    stocks.map(
-        stock => stock.code
-    );
+            const codes =
+                stocks.map(
+                    stock =>
+                        stock.code
+                );
+
 
             const results = [];
 
@@ -595,7 +678,9 @@ const codes =
                     );
 
 
+                    // --------------------------------
                     // 현재가
+                    // --------------------------------
 
                     const stock =
                         await getCurrentPrice(
@@ -603,7 +688,10 @@ const codes =
                         );
 
 
+                    // --------------------------------
                     // 이동평균
+                    // MA5 + MA20 + MA60 + MA120
+                    // --------------------------------
 
                     const ma =
                         await getMovingAverage(
@@ -611,7 +699,9 @@ const codes =
                         );
 
 
+                    // --------------------------------
                     // AI 분석
+                    // --------------------------------
 
                     const analysis =
                         analyzeStock({
@@ -632,37 +722,52 @@ const codes =
                                 ma.ma20,
 
                             ma60:
-                                ma.ma60
+                                ma.ma60,
+
+                            ma120:
+                                ma.ma120
 
                         });
 
 
-                // --------------------------------
-// 유효한 MA 데이터 종목 후보 등록
-// 점수순 정렬 후 TOP 10 반환
-// --------------------------------
+                    // --------------------------------
+                    // 유효한 MA 데이터 종목 후보 등록
+                    // --------------------------------
 
-                   if (
-    analysis.validMA
-) {
+                    if (
+                        analysis.validMA
+                    ) {
 
-    results.push({
+                        results.push({
 
                             code:
                                 code,
-name:
-    stocks.find(
-        item => item.code === code
-    )?.name || "",
+
+
+                            name:
+                                stocks.find(
+                                    item =>
+                                        item.code ===
+                                        code
+                                )?.name ||
+                                "",
+
 
                             price:
                                 stock.price,
 
+
                             change:
                                 stock.change,
 
+
                             volume:
                                 stock.volume,
+
+
+                            // =================================
+                            // 이동평균
+                            // =================================
 
                             ma5:
                                 ma.ma5,
@@ -672,6 +777,14 @@ name:
 
                             ma60:
                                 ma.ma60,
+
+                            ma120:
+                                ma.ma120,
+
+
+                            // =================================
+                            // AI 분석
+                            // =================================
 
                             score:
                                 analysis.score,
@@ -689,7 +802,9 @@ name:
                             "SCAN CANDIDATE",
                             code,
                             analysis.score,
-                            analysis.signal
+                            analysis.signal,
+                            "MA120:",
+                            ma.ma120
                         );
 
                     }
@@ -745,10 +860,11 @@ name:
                     results.length,
 
                 results:
-    results.slice(
-        0,
-        10
-    )
+                    results.slice(
+                        0,
+                        10
+                    )
+
             });
 
 
@@ -779,6 +895,12 @@ name:
 
     }
 );
+
+
+// =======================================
+// 서버 시작
+// =======================================
+
 app.listen(
     PORT,
     () => {
@@ -789,3 +911,4 @@ app.listen(
 
     }
 );
+```
