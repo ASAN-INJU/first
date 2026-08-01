@@ -2318,3 +2318,133 @@ chart =
 ```
 
 }
+/* =====================================
+ V13 자동 급등 감시
+===================================== */
+
+let watchTimer=null;
+
+
+function startWatch(){
+
+    if(watchTimer){
+
+        alert(
+        "이미 감시 중입니다."
+        );
+
+        return;
+
+    }
+
+
+    watch();
+
+
+    watchTimer =
+    setInterval(
+        watch,
+        60000
+    );
+
+
+    alert(
+    "1분마다 자동 감시 시작"
+    );
+
+}
+
+
+
+async function watch(){
+
+try{
+
+
+const response =
+await fetch(
+`${API_SERVER}/api/watch`
+);
+
+
+const data =
+await response.json();
+
+
+
+const box =
+document.getElementById(
+"watchResult"
+);
+
+
+
+if(!data.success){
+
+    box.innerHTML =
+    "감시 오류";
+
+    return;
+
+}
+
+
+
+if(
+data.results.length===0
+){
+
+    box.innerHTML =
+    "현재 조건 종목 없음";
+
+    return;
+
+}
+
+
+
+box.innerHTML =
+"<h3>🚨 발견 종목</h3>";
+
+
+
+data.results.forEach(
+stock=>{
+
+
+box.innerHTML +=
+
+`
+
+<div class="watchStock">
+
+<b>${stock.name}</b><br>
+
+현재가 :
+${stock.price.toLocaleString()}원<br>
+
+전일대비 :
+${stock.change}%<br>
+
+MA20 대비 :
+${stock.avgRate}%<br>
+
+</div>
+
+`;
+
+});
+
+
+}
+
+catch(error){
+
+console.log(
+"watch error",
+error
+);
+
+}
+
+}
