@@ -2511,3 +2511,151 @@ async function requestNotify(){
     }
 
 }
+/* =====================================
+ V13 자동 감시 시작
+===================================== */
+
+let watchTimer = null;
+
+
+function startWatch(){
+
+    const box =
+        document.getElementById(
+            "watchResult"
+        );
+
+
+    if(box){
+
+        box.innerHTML =
+        "🔍 단타 종목 감시 시작...";
+
+    }
+
+
+    if(watchTimer){
+
+        clearInterval(
+            watchTimer
+        );
+
+    }
+
+
+    checkWatch();
+
+
+    watchTimer =
+    setInterval(
+        checkWatch,
+        60000
+    );
+
+}
+
+
+
+/* =====================================
+ 감시 실행
+===================================== */
+
+async function checkWatch(){
+
+    const box =
+        document.getElementById(
+            "watchResult"
+        );
+
+
+    try{
+
+        const response =
+        await fetch(
+            `${API_SERVER}/api/watch`
+        );
+
+
+        const data =
+        await response.json();
+
+
+
+        if(
+            !data.success
+        ){
+
+            throw new Error(
+                "감시 실패"
+            );
+
+        }
+
+
+
+        if(
+            data.results.length === 0
+        ){
+
+            box.innerHTML =
+            "현재 조건에 맞는 종목 없음";
+
+            return;
+
+        }
+
+
+
+        box.innerHTML =
+        "<h3>🔥 급등 후보</h3>";
+
+
+
+        data.results.forEach(
+            stock=>{
+
+                box.innerHTML +=
+                `
+                <div>
+                ${stock.name}
+                (${stock.code})<br>
+
+                현재가 :
+                ${Number(stock.price).toLocaleString()}원<br>
+
+                전일대비 :
+                ${stock.change}%<br>
+
+                평균대비 :
+                ${stock.avgRate}%<br>
+
+                </div>
+                <hr>
+                `;
+
+
+                sendAlert(stock);
+
+            }
+        );
+
+
+    }
+    catch(error){
+
+        console.log(
+            "WATCH ERROR",
+            error
+        );
+
+
+        if(box){
+
+            box.innerHTML =
+            "감시 오류 : " + error.message;
+
+        }
+
+    }
+
+}
