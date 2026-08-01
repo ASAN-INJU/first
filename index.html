@@ -316,10 +316,9 @@ if ("serviceWorker" in navigator) {
 
 <h2>🔔 실시간 단타 감시</h2>
 
-<button onclick="startWatch()">
-자동 감시 시작
+<button onclick="requestNotify(); startWatch();">
+🔔 알림 켜고 자동 감시 시작
 </button>
-
 <div id="watchResult">
 
 감시 대기중
