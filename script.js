@@ -2448,3 +2448,56 @@ error
 }
 
 }
+/* =====================================
+ V13 휴대폰 알림 기능
+===================================== */
+
+let oldWatchList = [];
+
+
+/* 알림 보내기 */
+
+function sendAlert(stock){
+
+    if(
+        Notification.permission === "granted"
+    ){
+
+        new Notification(
+            "🔔 V13 단타 급등 알림",
+            {
+
+                body:
+
+                `${stock.name}
+
+현재가 :
+${stock.price.toLocaleString()}원
+
+전일대비 :
+${stock.change}%
+
+평균대비 :
+${stock.avgRate}%`
+
+            }
+        );
+
+    }
+
+}
+
+
+/* 알림 권한 요청 */
+
+async function requestNotify(){
+
+    if(
+        Notification.permission !== "granted"
+    ){
+
+        await Notification.requestPermission();
+
+    }
+
+}
