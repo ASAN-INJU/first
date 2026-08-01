@@ -2410,7 +2410,17 @@ box.innerHTML =
 
 data.results.forEach(
 stock=>{
+if(
+    !oldWatchList.includes(stock.code)
+){
 
+    sendAlert(stock);
+
+    oldWatchList.push(
+        stock.code
+    );
+
+}
 
 box.innerHTML +=
 
