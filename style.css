@@ -501,3 +501,50 @@ td {
     margin: 10px auto;
     box-sizing: border-box;
 }
+/* ==============================
+ V13 감시 화면
+============================== */
+
+.watchBox{
+
+    margin-top:20px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:15px;
+
+}
+
+
+.watchBox button{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#dc2626;
+
+    color:white;
+
+    font-size:16px;
+
+}
+
+
+.watchStock{
+
+    margin-top:10px;
+
+    padding:15px;
+
+    background:#f9fafb;
+
+    border-radius:10px;
+
+}
