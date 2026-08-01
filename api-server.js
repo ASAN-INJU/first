@@ -896,7 +896,198 @@ app.get(
     }
 );
 
+// =======================================
+// V13 실시간 급등 감시
+// 조건:
+// 가격 5만원 이하
+// MA20 대비 +3% 이상
+// 전일 대비 +3% 이상
+// =======================================
 
+app.get(
+    "/api/watch",
+    async (req,res)=>{
+
+        try{
+
+            console.log(
+                "WATCH START"
+            );
+
+
+            const results=[];
+
+
+            for(
+                const item of stocks
+            ){
+
+                try{
+
+
+                    const code =
+                    item.code;
+
+
+                    const stock =
+                    await getCurrentPrice(
+                        code
+                    );
+
+
+                    const ma =
+                    await getMovingAverage(
+                        code
+                    );
+
+
+                    const price =
+                    Number(
+                        stock.price || 0
+                    );
+
+
+                    const change =
+                    Number(
+                        stock.change || 0
+                    );
+
+
+                    const ma20 =
+                    Number(
+                        ma.ma20 || 0
+                    );
+
+
+                    // -------------------------
+                    // 조건
+                    // -------------------------
+
+                    if(
+
+                        price <= 50000
+
+                        &&
+
+                        ma20 > 0
+
+                        &&
+
+                        price >= ma20 * 1.03
+
+                        &&
+
+                        change >= 3
+
+                    ){
+
+                        results.push({
+
+                            code:
+
+                            code,
+
+
+                            name:
+
+                            item.name,
+
+
+                            price:
+
+                            price,
+
+
+                            change:
+
+                            change,
+
+
+                            ma20:
+
+                            ma20,
+
+
+                            avgRate:
+
+                            (
+                                (price-ma20)
+                                /
+                                ma20
+                                *
+                                100
+                            )
+                            .toFixed(2)
+
+                        });
+
+
+                        console.log(
+                            "WATCH FOUND",
+                            item.name
+                        );
+
+                    }
+
+
+                }
+                catch(error){
+
+                    console.log(
+                        "WATCH ERROR",
+                        item.code
+                    );
+
+                }
+
+
+            }
+
+
+            results.sort(
+
+                (a,b)=>
+
+                b.change-a.change
+
+            );
+
+
+            res.json({
+
+                success:true,
+
+                count:
+                results.length,
+
+                results:
+                results.slice(
+                    0,
+                    20
+                )
+
+            });
+
+
+        }
+        catch(error){
+
+
+            res.status(500)
+            .json({
+
+                success:false,
+
+                message:
+                error.message
+
+            });
+
+
+        }
+
+    }
+);
 // =======================================
 // 서버 시작
 // =======================================
