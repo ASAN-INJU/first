@@ -1091,7 +1091,203 @@ app.get(
 // =======================================
 // 서버 시작
 // =======================================
+// =======================================
+// V13 자동 급등 감시 API
+// 조건:
+// 1. 5만원 이하
+// 2. 전일대비 +3% 이상
+// 3. MA20 대비 +3% 이상
+// =======================================
 
+app.get(
+    "/api/watch",
+    async (req, res) => {
+
+        try {
+
+            console.log(
+                "V13 WATCH START"
+            );
+
+
+            const results = [];
+
+
+            for (
+                const item of stocks
+            ) {
+
+                try {
+
+
+                    const code =
+                        item.code;
+
+
+                    const stock =
+                        await getCurrentPrice(
+                            code
+                        );
+
+
+                    const ma =
+                        await getMovingAverage(
+                            code
+                        );
+
+
+                    const price =
+                        Number(
+                            stock.price || 0
+                        );
+
+
+                    const change =
+                        Number(
+                            stock.change || 0
+                        );
+
+
+                    const ma20 =
+                        Number(
+                            ma.ma20 || 0
+                        );
+
+
+                    // -------------------------
+                    // 조건 검사
+                    // -------------------------
+
+                    if(
+                        price <= 0 ||
+                        price > 50000
+                    ){
+
+                        continue;
+
+                    }
+
+
+                    if(
+                        change < 3
+                    ){
+
+                        continue;
+
+                    }
+
+
+                    if(
+                        ma20 <= 0
+                    ){
+
+                        continue;
+
+                    }
+
+
+                    const avgRate =
+                    (
+                        (price - ma20)
+                        /
+                        ma20
+                    )
+                    * 100;
+
+
+
+                    if(
+                        avgRate < 3
+                    ){
+
+                        continue;
+
+                    }
+
+
+
+                    results.push({
+
+                        code:
+                            code,
+
+                        name:
+                            item.name,
+
+                        price:
+                            price,
+
+                        change:
+                            change,
+
+                        avgRate:
+                            avgRate.toFixed(2)
+
+                    });
+
+
+                    console.log(
+                        "WATCH FOUND",
+                        item.name,
+                        price,
+                        change,
+                        avgRate
+                    );
+
+
+                }
+                catch(error){
+
+                    console.log(
+                        "WATCH ERROR",
+                        item.code,
+                        error.message
+                    );
+
+                }
+
+
+            }
+
+
+            res.json({
+
+                success:
+                    true,
+
+                count:
+                    results.length,
+
+                results:
+                    results
+
+            });
+
+
+        }
+        catch(error){
+
+            console.log(
+                "WATCH API ERROR",
+                error.message
+            );
+
+
+            res.status(500)
+            .json({
+
+                success:
+                    false,
+
+                message:
+                    error.message
+
+            });
+
+        }
+
+    }
+);
 app.listen(
     PORT,
     () => {
